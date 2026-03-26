@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 90%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #FFFAF0;
+  }
+
+  ::selection {
+    background: rgba(13, 148, 136, 0.2);
+    color: #101012;
+  }
+}
+
+.section {
+  transition: border-color 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+  .title-text {
+    max-width: 16ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .section {
+    transition: none;
+  }
+}
