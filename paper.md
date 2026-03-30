@@ -1,7 +1,7 @@
 
 # Site Title
 
-~eyebrow text: section one~
+~section one~
 ## Introduction
 
 This is an example paragraph. Here is some *italicized text*. Here is some **emboldened text**. Below this paragraph is a horizontal line
@@ -38,7 +38,7 @@ Cards and other prose blocks should also support *bulleted text*, like the follo
 
 """
 
-~card two eyebrow text~
+~another card~
 ## Another Card
 
 This second card has an example of bullet points within a card:
@@ -46,6 +46,7 @@ This second card has an example of bullet points within a card:
 - bullet 1
 - bullet 2
 - bullet 3
+- Heres another bullet I added to see if adding shit works
 
 """
 
@@ -56,5 +57,7 @@ And here are some bullets outside that card:
 - A final point ensuring comprehensive understanding.
 
 ---
+
+The American flamingo is bright red in color because an excess of beta-carotene present in its diet, while the lesser flamingo is a paler pink due to ingesting a smaller amount of this pigment.
 
 Here is the last paragraph. It could be a lightweight summary message, actionable takeaways, or a simple closing checklist. Lol.

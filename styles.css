@@ -16,6 +16,17 @@ a {
   color: inherit;
 }
 
+.sidebar-link {
+  text-decoration: none;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus-visible {
+  text-decoration: underline;
+}
+
 img {
   max-width: 100%;
   display: block;

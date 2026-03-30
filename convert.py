@@ -42,6 +42,28 @@ def split_blocks(markdown_text: str) -> list[tuple[str, str]]:
 	return blocks
 
 
+def slugify(text: str) -> str:
+	text = text.lower()
+	text = re.sub(r"[’']", "", text)
+	text = re.sub(r"[^a-z0-9\s-]", "", text)
+	text = re.sub(r"\s+", "-", text.strip())
+	text = re.sub(r"-+", "-", text)
+	return text or "section"
+
+
+def extract_sections(blocks: list[tuple[str, str]]) -> list[dict[str, str]]:
+	sections = []
+	for kind, text in blocks:
+		if kind != "prose":
+			continue
+		for line in text.splitlines():
+			match = re.match(r"^\s*##\s+(.+?)\s*$", line)
+			if match:
+				title = match.group(1).strip()
+				sections.append({"title": title, "id": slugify(title)})
+	return sections
+
+
 def pop_title(markdown_text: str) -> tuple[str, str]:
 	lines = markdown_text.splitlines()
 	for i, line in enumerate(lines):
@@ -71,7 +93,7 @@ def add_class_to_tag(html_text: str, tag: str, class_names: str) -> str:
 
 def style_prose_html(html_text: str) -> str:
 	html_text = add_class_to_tag(html_text, "p", "text-paragraph")
-	html_text = add_class_to_tag(html_text, "h2", "text-3xl font-bold mb-8 text-primary")
+	html_text = add_class_to_tag(html_text, "h2", "text-3xl font-bold mb-8 text-primary scroll-mt-8")
 	html_text = add_class_to_tag(html_text, "h3", "text-2xl font-semibold mb-6 text-primary")
 	html_text = add_class_to_tag(html_text, "ul", "bullet-list mt-4 mb-10 max-w-4xl")
 	html_text = add_class_to_tag(html_text, "ol", "list-decimal pl-6 text-[#2c2e33] space-y-2 mt-4 mb-10 max-w-4xl")
@@ -91,10 +113,27 @@ def replace_eyebrows(markdown_text: str) -> str:
 	for line in markdown_text.splitlines():
 		match = re.match(r"^\s*~(.+?)~\s*$", line)
 		if match:
-			out.append(f'<div class="card-label mb-3">{html.escape(match.group(1).strip())}</div>')
+			out.append(f'<div class="eyebrow mb-3">{html.escape(match.group(1).strip())}</div>')
 		else:
 			out.append(line)
 	return "\n".join(out)
+
+
+def apply_section_ids(html_text: str, sections: list[dict[str, str]], start_index: int) -> tuple[str, int]:
+	index = start_index
+
+	def replacer(match: re.Match[str]) -> str:
+		nonlocal index
+		attrs = match.group(1) or ""
+		attrs = re.sub(r'\s+id\s*=\s*"[^"]*"', "", attrs, flags=re.IGNORECASE)
+		if index >= len(sections):
+			return f"<h2{attrs}>"
+		head_id = sections[index]["id"]
+		index += 1
+		return f'<h2 id="{head_id}"{attrs}>'
+
+	html_text = re.sub(r"<h2(\s+[^>]*)?>", replacer, html_text, flags=re.IGNORECASE)
+	return html_text, index
 
 
 def parse_card(markdown_block: str) -> tuple[str | None, str | None, str]:
@@ -123,7 +162,7 @@ def render_card(markdown_block: str) -> str:
 	label, title, body = parse_card(markdown_block)
 	out = ['<div class="card">']
 	if label:
-		out.append(f'  <p class="card-label">{html.escape(label)}</p>')
+		out.append(f'  <p class="eyebrow">{html.escape(label)}</p>')
 	if title:
 		out.append(f'  <h2 class="card-heading">{html.escape(title)}</h2>')
 	if body:
@@ -135,15 +174,51 @@ def render_card(markdown_block: str) -> str:
 	return "\n".join(out)
 
 
+def replace_sidebar_points(template: str, sections: list[dict[str, str]]) -> str:
+	if not sections:
+		return template
+
+	mobile_items = "\n".join(
+		f'      <li><a class="sidebar-link" href="#{section["id"]}">{html.escape(section["title"])}</a></li>'
+		for section in sections
+	)
+	desktop_items = "\n".join(
+		f'            <p>- <a class="sidebar-link" href="#{section["id"]}">{html.escape(section["title"])}</a></p>'
+		for section in sections
+	)
+
+	template = re.sub(
+		r"(<ul class=\"mobile-points\">)(.*?)(</ul>)",
+		lambda match: f"{match.group(1)}\n{mobile_items}\n    {match.group(3)}",
+		template,
+		count=1,
+		flags=re.DOTALL,
+	)
+
+	template = re.sub(
+		r"(<div class=\"sidebar-points\">)(.*?)(</div>)",
+		lambda match: f"{match.group(1)}\n{desktop_items}\n          {match.group(3)}",
+		template,
+		count=1,
+		flags=re.DOTALL,
+	)
+
+	return template
+
+
 def main() -> None:
 	markdown_text = INPUT_FILE.read_text(encoding="utf-8")
 	template = OUTPUT_FILE.read_text(encoding="utf-8")
 	site_title, markdown_text = pop_title(markdown_text)
+	blocks = split_blocks(markdown_text)
+	sections = extract_sections(blocks)
 
 	rendered = []
-	for kind, text in split_blocks(markdown_text):
+	section_index = 0
+	for kind, text in blocks:
 		if kind == "prose":
 			prose_html = style_prose_html(run_pandoc(replace_eyebrows(text)))
+			prose_html, section_index = apply_section_ids(prose_html, sections, section_index)
 			rendered.append(prose_html)
 		else:
 			rendered.append(render_card(text))
@@ -158,6 +233,7 @@ def main() -> None:
 	escaped = html.escape(site_title)
 	template = re.sub(r"(<h1 class=\"title-text\">)(.*?)(</h1>)", rf"\1{escaped}\3", template)
 	template = re.sub(r"(<title>)(.*?)(</title>)", rf"\1{escaped} | Home\3", template, count=1)
+	template = replace_sidebar_points(template, sections)
 
 	OUTPUT_FILE.write_text(template, encoding="utf-8")
 	print(f"Updated {OUTPUT_FILE} from {INPUT_FILE}")

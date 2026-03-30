@@ -4,7 +4,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                'mono': ['"Roboto Mono"', 'monospace']
+                'main': ['"Montserrat"', 'sans-serif']
             },
             container: {
                 center: true,
@@ -55,10 +55,10 @@ module.exports = {
 
                 // Sidebar Components
                 '.sticky-sidebar': {
-                    '@apply hidden lg:block w-[25%] xl2:w-[30%] fixed top-0 left-0 h-screen bg-surface border-r border-black/20 z-50 pt-12': {},
+                    '@apply hidden lg:block w-[22%] xl2:w-[26%] fixed top-0 left-0 h-screen bg-surface border-r border-black/20 z-50 pt-12': {},
                 },
                 '.sidebar-content': {
-                    '@apply p-8 pl-12 flex flex-col justify-between h-full': {},
+                    '@apply p-8 pl-12 pr-12 flex flex-col justify-between h-full': {},
                 },
                 '.sidebar-points': {
                     '@apply mt-8 space-y-4 text-base text-[#2c2e33]': {},
@@ -74,32 +74,28 @@ module.exports = {
 
                 // Main Content Components
                 '.main-container': {
-                    '@apply w-full lg:w-[75%] xl2:w-[70%] px-4 lg:px-12 py-8 lg:ml-[25%] xl2:ml-[30%] text-[#2c2e33]': {},
+                    '@apply w-full lg:w-[78%] xl2:w-[74%] px-4 lg:px-12 py-8 lg:ml-[22%] xl2:ml-[26%] text-[#2c2e33]': {},
                 },
                 '.text-paragraph': {
                     '@apply text-lg leading-relaxed mb-10 max-w-4xl': {},
+                },
+                '.bullet-list': {
+                    '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
+                },
+                '.eyebrow': {
+                    '@apply text-xs uppercase tracking-[0.28em] text-primary-dark': {},
                 },
                 '.card': {
                     '@apply mb-16 relative px-6 py-8 bg-surface-light/50 rounded-lg border border-primary-dark/20 scroll-mt-8 my-10 max-w-3xl': {},
                 },
                 '.card-heading': {
-                    '@apply text-2xl font-bold text-primary mb-6 inline-block relative border-b-4 border-dotted border-primary-dark/50 pb-2': {},
+                    '@apply text-2xl font-bold text-primary mb-6 inline-block relative border-b-4 border-dotted border-primary-dark/50 pb-2 pt-2': {},
                 },
-                '.content-paragraph': {
+                '.card-paragraph': {
                     '@apply prose mt-4 w-full': {},
-                },
-                '.bullet-list': {
-                    '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
-                },
-
-                '.card-label': {
-                    '@apply text-xs uppercase tracking-[0.28em] text-primary-dark': {},
                 },
                 '.shell-panel': {
                     '@apply mt-6 rounded-lg border border-primary-dark/20 bg-black/10 p-4': {},
-                },
-                '.shell-panel-title': {
-                    '@apply text-sm uppercase tracking-[0.22em] text-[#2c2e33]': {},
                 },
                 '.shell-panel-copy': {
                     '@apply mt-2 text-sm text-[#2c2e33]': {},
