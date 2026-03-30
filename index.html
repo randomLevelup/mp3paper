@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site Placeholder | Home</title>
+  <title>Site Title | Home</title>
   <link href="dist/output.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <body class="bg-surface text-[#101012] font-mono min-h-screen pt-12">
   <!-- Header - Mobile -->
   <header class="mobile-header">
-    <h1 class="title-text">Placeholder Site Title</h1>
+    <h1 class="title-text">Site Title</h1>
     <ul class="mobile-points">
       <li>Replace this bullet with a primary focus area.</li>
       <li>Replace this bullet with a current project or offering.</li>
@@ -42,59 +42,75 @@
 
     <!-- Main Content -->
     <main class="main-container">
-      <section class="section">
-        <p class="section-label">Section One</p>
-        <h2 class="section-heading">Replace This Intro Heading</h2>
-        <div class="content-paragraph">
-          <p>
-            Replace this paragraph with a short introduction that explains who you are, what you do, and why this site exists.
-          </p>
-          <p>
-            Add a second paragraph here for a little more context, such as your background, priorities, or the type of work you want visitors to notice first.
-          </p>
-          <p>
-            If needed, use a third paragraph for personality, process, or a concise statement about what makes your work distinctive.
-          </p>
-        </div>
-      </section>
+      <div class="card-label mb-3">
+      eyebrow text: section one
+      </div>
+      <h2 id="introduction" class="text-3xl font-bold mb-8 text-primary">Introduction</h2>
+      <p class="text-paragraph">This is an example paragraph. Here is some <em>italicized text</em>.
+      Here is some <strong>emboldened text</strong>. Below this paragraph is a
+      horizontal line</p>
+      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <p class="text-paragraph">Heres another paragraph below the vertical line. Formatted paragraphs
+      like this will carry the narrative weight of the lesson, while cards
+      will be interspersed within the flow to break down complex ideas,
+      provide examples, or highlight key terms to ensure comprehensive
+      learning.</p>
+      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <div class="card-label mb-3">
+      section two
+      </div>
+      <h2 id="a-title-for-section-two" class="text-3xl font-bold mb-8 text-primary">A Title For Section Two</h2>
+      <p class="text-paragraph">After this short paragraph I’ll place a “card” using my custom
+      triple-quote format.</p>
 
-      <section class="section">
-        <p class="section-label">Section Two</p>
-        <h2 class="section-heading">Replace This Detail Heading</h2>
+      <div class="card">
+        <p class="card-label">card one eyebrow text</p>
+        <h2 class="card-heading">Card Title</h2>
         <div class="content-paragraph">
-          <p>
-            Use this section for a services overview, selected capabilities, or a short summary of what visitors should expect next.
-          </p>
+          <p>Card text example: This card visually breaks up the main text flow,
+          isolating a critical concept. Think of it as a dedicated textbook box
+          that draws the reader’s attention to a specific example or diagram.</p>
         </div>
-        <ul class="bullet-list mt-6">
-          <li>Replace this list item with a clear capability, service, or topic.</li>
-          <li>Replace this list item with a second supporting point.</li>
-          <li>Replace this list item with a third supporting point.</li>
-        </ul>
-        <div class="shell-panel">
-          <p class="shell-panel-title">Optional Callout</p>
-          <p class="shell-panel-copy">Use this area for a short quote, note, or invitation to keep scrolling.</p>
-        </div>
-      </section>
+      </div>
 
-      <section class="section">
-        <p class="section-label">Section Three</p>
-        <h2 class="section-heading">Replace This Closing Heading</h2>
+      <p class="text-paragraph">Example paragraph after card: After a card, the primary text resumes
+      smoothly. This pacing ensures that the reader is continuously engaged
+      but not overwhelmed. It provides steady, reading-friendly documentation.
+      For instance, following the introduction of a new concept, we might
+      follow up with a list of historical usages or edge cases.</p>
+      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <div class="card-label mb-3">
+      section three
+      </div>
+      <h2 id="nice-title-for-section-three" class="text-3xl font-bold mb-8 text-primary">Nice Title for Section Three</h2>
+      <p class="text-paragraph">Cards and other prose blocks should also support <em>bulleted
+      text</em>, like the following for example:</p>
+
+      <div class="card">
+        <p class="card-label">card two eyebrow text</p>
+        <h2 class="card-heading">Another Card</h2>
         <div class="content-paragraph">
-          <p>
-            Reserve this section for contact information, a lightweight footer message, or a simple closing statement that points visitors toward the next action.
-          </p>
-          <p>
-            Helpful placeholder text is already in place so you can swap in final copy without rebuilding the layout.
-          </p>
-          <p>
-            Replace this sentence with whatever final prompt best fits the revised site structure.
-          </p>
+          <p>This second card has an example of bullet points within a card:</p>
+          <ul class="bullet-list mt-6">
+          <li>bullet 1</li>
+          <li>bullet 2</li>
+          <li>bullet 3</li>
+          </ul>
         </div>
-      </section>
+      </div>
+
+      <p class="text-paragraph">And here are some bullets outside that card:</p>
+      <ul class="bullet-list mt-4 mb-10 max-w-4xl">
+      <li>Supporting point about this core feature.</li>
+      <li>Another crucial component that forms the feature’s foundation.</li>
+      <li>A final point ensuring comprehensive understanding.</li>
+      </ul>
+      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <p class="text-paragraph">Here is the last paragraph. It could be a lightweight summary
+      message, actionable takeaways, or a simple closing checklist. Lol.</p>
 
       <footer class="page-footer">
-        <p>Replace this footer line with your preferred ownership, status, or contact text.</p>
+        <p>Site Content © 2026</p>
       </footer>
     </main>
   </div>

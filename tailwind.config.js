@@ -74,12 +74,15 @@ module.exports = {
 
                 // Main Content Components
                 '.main-container': {
-                    '@apply w-full lg:w-[75%] xl2:w-[70%] px-4 lg:px-12 py-8 lg:ml-[25%] xl2:ml-[30%]': {},
+                    '@apply w-full lg:w-[75%] xl2:w-[70%] px-4 lg:px-12 py-8 lg:ml-[25%] xl2:ml-[30%] text-[#2c2e33]': {},
                 },
-                '.section': {
-                    '@apply mb-16 relative px-6 py-8 bg-surface-light/50 rounded-lg border border-primary-dark/20 scroll-mt-8': {},
+                '.text-paragraph': {
+                    '@apply text-lg leading-relaxed mb-10 max-w-4xl': {},
                 },
-                '.section-heading': {
+                '.card': {
+                    '@apply mb-16 relative px-6 py-8 bg-surface-light/50 rounded-lg border border-primary-dark/20 scroll-mt-8 my-10 max-w-3xl': {},
+                },
+                '.card-heading': {
                     '@apply text-2xl font-bold text-primary mb-6 inline-block relative border-b-4 border-dotted border-primary-dark/50 pb-2': {},
                 },
                 '.content-paragraph': {
@@ -89,7 +92,7 @@ module.exports = {
                     '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
                 },
 
-                '.section-label': {
+                '.card-label': {
                     '@apply text-xs uppercase tracking-[0.28em] text-primary-dark': {},
                 },
                 '.shell-panel': {

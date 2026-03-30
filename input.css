@@ -27,7 +27,7 @@
   }
 }
 
-.section {
+.card {
   transition: border-color 0.2s ease;
 }
 
@@ -42,7 +42,7 @@
     scroll-behavior: auto;
   }
 
-  .section {
+  .card {
     transition: none;
   }
 }

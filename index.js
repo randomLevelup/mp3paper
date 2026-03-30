@@ -1,30 +1,30 @@
-const sectionBorderQuery = window.matchMedia('(min-width: 1024px) and (pointer: fine)');
-const sectionBorderDefault = 'rgba(15, 118, 110, 0.25)';
+const cardBorderQuery = window.matchMedia('(min-width: 1024px) and (pointer: fine)');
+const cardBorderDefault = 'rgba(15, 118, 110, 0.25)';
 let rafId = null;
 let latestCursor = null;
 
-// Cache the sections to avoid querying the DOM on every mouse move
-const sections = Array.from(document.querySelectorAll('.section'));
+// Cache the cards to avoid querying the DOM on every mouse move
+const cards = Array.from(document.querySelectorAll('.card'));
 
-function updateSectionBorders() {
-  sections.forEach((section) => {
-    const rect = section.getBoundingClientRect();
+function updateCardBorders() {
+  cards.forEach((card) => {
+    const rect = card.getBoundingClientRect();
     const distanceToBox = getDistanceToBorder(latestCursor, rect);
 
     if (distanceToBox < 100) {
       const intensity = 1 - distanceToBox / 100;
-      section.style.borderColor = `rgba(13, 148, 136, ${intensity})`;
+      card.style.borderColor = `rgba(13, 148, 136, ${intensity})`;
       return;
     }
 
-    section.style.borderColor = sectionBorderDefault;
+    card.style.borderColor = cardBorderDefault;
   });
 
   rafId = null;
 }
 
 function handlePointerMove(event) {
-  if (!sectionBorderQuery.matches) {
+  if (!cardBorderQuery.matches) {
     return;
   }
 
@@ -36,19 +36,19 @@ function handlePointerMove(event) {
   latestCursor = { x: event.clientX, y: event.clientY };
 
   if (rafId === null) {
-    rafId = window.requestAnimationFrame(updateSectionBorders);
+    rafId = window.requestAnimationFrame(updateCardBorders);
   }
 }
 
-function resetSectionBorders() {
-  sections.forEach((section) => {
-    section.style.borderColor = sectionBorderDefault;
+function resetCardBorders() {
+  cards.forEach((card) => {
+    card.style.borderColor = cardBorderDefault;
   });
 }
 
 document.addEventListener('mousemove', handlePointerMove);
-sectionBorderQuery.addEventListener('change', resetSectionBorders);
-window.addEventListener('blur', resetSectionBorders);
+cardBorderQuery.addEventListener('change', resetCardBorders);
+window.addEventListener('blur', resetCardBorders);
 
 function getDistanceToBorder(point, rect) {
   if (!point) {

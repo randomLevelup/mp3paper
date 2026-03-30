@@ -21,7 +21,7 @@ img {
   display: block;
 }
 
-.section {
+.card {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
   will-change: border-color;
 }
