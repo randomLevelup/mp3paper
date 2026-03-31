@@ -223,7 +223,7 @@ def main() -> None:
 		else:
 			rendered.append(render_card(text))
 
-	rendered.append('<footer class="page-footer">\n  <p>Site Content © 2026</p>\n</footer>')
+	rendered.append('<footer class="page-footer">\n  <p>References: 😜</p>\n</footer>')
 	main_content = "\n\n".join(block for block in rendered if block.strip())
 
 	main_pattern = re.compile(r"(<main class=\"main-container\">)(.*?)(</main>)", re.DOTALL)

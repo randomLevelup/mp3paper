@@ -83,7 +83,7 @@ module.exports = {
                     '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
                 },
                 '.eyebrow': {
-                    '@apply text-xs uppercase tracking-[0.28em] text-primary-dark': {},
+                    '@apply text-xs uppercase tracking-[0.28em] text-primary-dark pl-0.5': {},
                 },
                 '.card': {
                     '@apply mb-16 relative px-6 py-8 bg-surface-light/50 rounded-lg border border-primary-dark/20 scroll-mt-8 my-10 max-w-3xl': {},
