@@ -59,3 +59,55 @@ function getDistanceToBorder(point, rect) {
   const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom);
   return Math.sqrt(dx * dx + dy * dy);
 }
+
+async function loadMp3PaperWasm() {
+  try {
+    const moduleFactoryImport = await import('./wasm/mp3paper.js');
+    const moduleFactory = moduleFactoryImport.default;
+
+    if (typeof moduleFactory !== 'function') {
+      console.error('[mp3paper] Expected ES module default export factory function.');
+      return;
+    }
+
+    const module = await moduleFactory({
+      locateFile: (path) => {
+        if (path.endsWith('.wasm')) {
+          return `./wasm/${path}`;
+        }
+        return path;
+      },
+    });
+
+    console.log('[mp3paper] wasm module initialized');
+
+    if (typeof module.cwrap === 'function') {
+      const examplefunc1 = module.cwrap('examplefunc1', 'number', ['number']);
+      const examplefunc2 = module.cwrap('examplefunc2', null, ['number']);
+
+      const resultPtr = examplefunc1(44100);
+      console.log('[mp3paper] examplefunc1(44100) returned pointer:', resultPtr);
+
+      examplefunc2(0);
+      console.log('[mp3paper] examplefunc2(0) called');
+      return;
+    }
+
+    if (typeof module._examplefunc1 === 'function') {
+      const resultPtr = module._examplefunc1(44100);
+      console.log('[mp3paper] _examplefunc1(44100) returned pointer:', resultPtr);
+
+      if (typeof module._examplefunc2 === 'function') {
+        module._examplefunc2(0);
+        console.log('[mp3paper] _examplefunc2(0) called');
+      }
+      return;
+    }
+
+    console.warn('[mp3paper] Test exports were not found on the module instance.');
+  } catch (error) {
+    console.error('[mp3paper] Failed to load wasm module:', error);
+  }
+}
+
+loadMp3PaperWasm();
