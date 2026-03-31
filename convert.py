@@ -97,7 +97,7 @@ def style_prose_html(html_text: str) -> str:
 	html_text = add_class_to_tag(html_text, "h3", "text-2xl font-semibold mb-6 text-primary")
 	html_text = add_class_to_tag(html_text, "ul", "bullet-list mt-4 mb-10 max-w-4xl")
 	html_text = add_class_to_tag(html_text, "ol", "list-decimal pl-6 text-[#2c2e33] space-y-2 mt-4 mb-10 max-w-4xl")
-	html_text = re.sub(r"<hr\s*/?>", '<hr class="my-10 border-primary-dark/30 max-w-4xl">', html_text, flags=re.IGNORECASE)
+	html_text = re.sub(r"<hr\s*/?>", '<hr class="my-20 border-primary-dark/30 max-w-4xl">', html_text, flags=re.IGNORECASE)
 	return html_text
 
 

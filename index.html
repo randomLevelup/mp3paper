@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Is This Loss? | Home</title>
+  <title>The MP3 Paper | Home</title>
   <link href="dist/output.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"></head>
 <body class="bg-surface text-[#101012] font-main min-h-screen pt-12">
   <!-- Header - Mobile -->
   <header class="mobile-header">
-    <h1 class="title-text">Is This Loss?</h1>
+    <h1 class="title-text">The MP3 Paper</h1>
     <ul class="mobile-points">
       <li><a class="sidebar-link" href="#what-am-i-saying">What Am I Saying?</a></li>
       <li><a class="sidebar-link" href="#demonstration">Demonstration</a></li>
+      <li><a class="sidebar-link" href="#the-actual-paper">The Actual Paper</a></li>
     </ul>
   </header>
   
@@ -25,17 +27,18 @@
       <div class="sidebar-content flex flex-col h-full">
         <!-- Title and Notes -->
         <div>
-          <h1 class="title-text">Is This Loss?</h1>
+          <h1 class="title-text">The MP3 Paper</h1>
           
           <div class="sidebar-points">
             <p>- <a class="sidebar-link" href="#what-am-i-saying">What Am I Saying?</a></p>
             <p>- <a class="sidebar-link" href="#demonstration">Demonstration</a></p>
+            <p>- <a class="sidebar-link" href="#the-actual-paper">The Actual Paper</a></p>
           </div>
         </div>
         
         <div class="shell-panel mt-auto">
-          <p class="shell-panel-copy">© 2026 Jupiter Westbard</p>
           <p class="shell-panel-copy">Created for MUS-0057</p>
+          <p class="shell-panel-copy">© 2026 Jupiter Westbard</p>
         </div>
       </div>
     </aside>
@@ -45,7 +48,7 @@
       <p class="text-paragraph"><em>“I’ve been reading lips for 20 years… I’m a rock musician. I’m
       deaf. I can’t hear what you’re saying.”</em></p>
       <p class="text-paragraph"><em>- Dave Grohl</em></p>
-      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Introduction
       </div>
@@ -57,7 +60,9 @@
       <em>data</em> and the economy of, well, money? As a supplement to my
       paper, I plan to code a compression demo blown up step-by-step with
       helpful visualizations.</p>
-      <hr class="my-10 border-primary-dark/30 max-w-4xl">
+      <p class="text-paragraph">If you’re curious, here’s <a
+      href="https://github.com/randomLevelup/mp3paper">the code</a>.</p>
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Part One
       </div>
@@ -73,6 +78,54 @@
           <p><em>upload button lol</em></p>
         </div>
       </div>
+
+      <p class="text-paragraph">Now we consider the bit-rate. Its like a quality slider. Choose your
+      bit rate now!</p>
+
+      <div class="card">
+        <p class="eyebrow">Step Two</p>
+        <h2 class="card-heading">Adjust Bit Rate</h2>
+        <div class="content-paragraph">
+          <p><em>bitrate slider here</em></p>
+          <p><em><strong>encode</strong> button here</em></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Algorithm: Polyphase Filtering</p>
+        <div class="content-paragraph">
+          <p><br />
+          Lowkirkenuinely don’t know what this does but im going to find out.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Algorithm: Psychoacoustics Modeling</p>
+        <div class="content-paragraph">
+          <p><br />
+          Show some stats accumulated from the filterbank calculations. Best
+          option for visualization is probably chart.js or plotly.js, so some
+          aggregation of data needs to be sent back through wasm</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Algorithm: Bit Allocation</p>
+        <div class="content-paragraph">
+          <p><br />
+          Try to visually represent which bands are getting the most bits, and
+          which are getting the least. This will be the last of the visualized
+          steps.</p>
+        </div>
+      </div>
+
+      <p class="text-paragraph">And now we know…</p>
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
+      <div class="eyebrow mb-3">
+      Parts Two, Three etc.
+      </div>
+      <h2 id="the-actual-paper" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">The Actual Paper</h2>
+      <p class="text-paragraph"><em>Actual paper pending…</em></p>
 
       <footer class="page-footer">
         <p>References: 😜</p>

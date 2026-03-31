@@ -4,7 +4,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                'main': ['"Montserrat"', 'sans-serif']
+                'main': ['Noto Serif', 'serif']
             },
             container: {
                 center: true,
@@ -77,7 +77,10 @@ module.exports = {
                     '@apply w-full lg:w-[78%] xl2:w-[74%] px-4 lg:px-12 py-8 lg:ml-[22%] xl2:ml-[26%] text-[#2c2e33]': {},
                 },
                 '.text-paragraph': {
-                    '@apply text-lg leading-relaxed mb-10 max-w-4xl': {},
+                    '@apply text-lg leading-loose mb-10 max-w-4xl': {},
+                },
+                '.text-paragraph a': {
+                    '@apply underline': {},
                 },
                 '.bullet-list': {
                     '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
@@ -89,7 +92,7 @@ module.exports = {
                     '@apply mb-16 relative px-6 py-8 bg-surface-light/50 rounded-lg border border-primary-dark/20 scroll-mt-8 my-10 max-w-3xl': {},
                 },
                 '.card-heading': {
-                    '@apply text-2xl font-bold text-primary mb-6 inline-block relative border-b-4 border-dotted border-primary-dark/50 pb-2 pt-2': {},
+                    '@apply text-2xl font-bold text-primary mb-6 inline-block relative border-b-2 border-primary-dark/50 pb-2 pt-2': {},
                 },
                 '.card-paragraph': {
                     '@apply prose mt-4 w-full': {},
