@@ -25,40 +25,52 @@ As a supplement to my paper, I plan to code a compression demo blown up step-by-
 ~Step One~
 ## Upload File
 
-*upload button lol*
+{{info:upload-status:No File Selected}}
+{{button:Upload WAV}}
+{{button:Use Example File}}
 
 """
 
-Now we consider the bit-rate. Its like a quality slider. Choose your bit rate now!
+Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate now!
 
 """
 ~Step Two~
 ## Adjust Bit Rate
 
-*bitrate slider here*
+{{slider:bitrate}}
+{{info:bitrate-display:128 kbps}}
 
-*__encode__ button here*
+{{button:Encode}}
 
 """
 
 """
 ~Algorithm: Polyphase Filtering~
 \
-Lowkirkenuinely don't know what this does but im going to find out.
+We run the data through a custom filterbank to divide the audio signal into 32 equal-width frequency subbands. The human ear has a limited resolution that can be expressed in terms of critical bandwidths less than 100Hz and more than 4kHz. Within a critical bandwidth the human ear blurs frequencies. Thus the filter bank creates equal-width frequency subbands that correlate to the critical bandwidths in a method diagrammed in the following figure. For the visualization, I want to show this subband split visually, but I also want to somehow incorporate stats from the actual conversion, so that the visualization is unique to the audio file.
+
+{{hidden_button:btn-polyphase:Run}}
+{{hidden_image:img-polyphase:testimage.svg}}
 
 """
 
 """
 ~Algorithm: Psychoacoustics Modeling~
 \
-Show some stats accumulated from the filterbank calculations. Best option for visualization is probably chart.js or plotly.js, so some aggregation of data needs to be sent back through wasm
+Psychoacoustics has examined the concept of auditory masking and its effect on compression. Within each (critical) subband where blurring occurs the presence of a strong tonal signal can mask a region of weaker signals. For this card, we want to somehow visualize some of the results psychoacoustic analysis in a digestible way.
+
+{{hidden_button:btn-psycho:Run}}
+{{hidden_image:img-psycho:testimage.svg}}
 
 """
 
 """
 ~Algorithm: Bit Allocation~
 \
-Try to visually represent which bands are getting the most bits, and which are getting the least. This will be the last of the visualized steps.
+Through an iterative algorithm, the bit allocation uses information from the psychoacoustic model to determine the number of code bits to be allocated to each subband. This process can be described using the following formula: MNRdB = SNRdB - SMRdB. For this visualization, we want to build off the psychoacoustics results and show which bands are getting more bits.
+
+{{hidden_button:btn-bitalloc:Run}}
+{{hidden_image:img-bitalloc:testimage.svg}}
 
 """
 

@@ -91,6 +91,18 @@ def add_class_to_tag(html_text: str, tag: str, class_names: str) -> str:
 	return pattern.sub(replacer, html_text)
 
 
+def process_external_links(html_text: str) -> str:
+	pattern = re.compile(r'<a\s+([^>]*href=["\'](http[s]?://[^"\']+)["\'][^>]*)>', re.IGNORECASE)
+
+	def replacer(match: re.Match[str]) -> str:
+		attrs = match.group(1)
+		if not re.search(r'\btarget\s*=', attrs, re.IGNORECASE):
+			return f'<a target="_blank" {attrs}>'
+		return match.group(0)
+
+	return pattern.sub(replacer, html_text)
+
+
 def style_prose_html(html_text: str) -> str:
 	html_text = add_class_to_tag(html_text, "p", "text-paragraph")
 	html_text = add_class_to_tag(html_text, "h2", "text-3xl font-bold mb-8 text-primary scroll-mt-8")
@@ -105,6 +117,33 @@ def style_card_body_html(html_text: str) -> str:
 	html_text = add_class_to_tag(html_text, "ul", "bullet-list mt-6")
 	html_text = add_class_to_tag(html_text, "ol", "list-decimal pl-6 text-[#2c2e33] space-y-2 mt-6")
 	html_text = re.sub(r"<hr\s*/?>", '<hr class="my-8 border-primary-dark/30">', html_text, flags=re.IGNORECASE)
+	
+	# Replace interactive elemental macros -> HTML
+	html_text = re.sub(
+		r"\{\{button:(.*?)\}\}",
+		r'<button class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">\1</button>',
+		html_text
+	)
+	html_text = re.sub(
+		r"\{\{slider:(.*?)\}\}",
+		r'<div class="mt-6 mb-1"><input type="range" id="\1" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div>',
+		html_text
+	)
+	html_text = re.sub(
+		r"\{\{info:(.*?):(.*?)\}\}",
+		r'<p id="\1" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">\2</p>',
+		html_text
+	)
+	html_text = re.sub(
+		r"\{\{hidden_button:(.*?):(.*?)\}\}",
+		r'<button id="\1" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">\2</button>',
+		html_text
+	)
+	html_text = re.sub(
+		r"\{\{hidden_image:(.*?):(.*?)\}\}",
+		r'<img id="\1" src="\2" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4">',
+		html_text
+	)
 	return html_text
 
 
@@ -225,6 +264,7 @@ def main() -> None:
 
 	rendered.append('<footer class="page-footer">\n  <p>References: 😜</p>\n</footer>')
 	main_content = "\n\n".join(block for block in rendered if block.strip())
+	main_content = process_external_links(main_content)
 
 	main_pattern = re.compile(r"(<main class=\"main-container\">)(.*?)(</main>)", re.DOTALL)
 	main_html = "\n".join(f"      {line}" if line else "" for line in main_content.strip().splitlines())

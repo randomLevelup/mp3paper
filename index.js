@@ -111,3 +111,14 @@ async function loadMp3PaperWasm() {
 }
 
 loadMp3PaperWasm();
+
+document.addEventListener('DOMContentLoaded', () => {
+  const bitrateSlider = document.getElementById('bitrate');
+  const bitrateDisplay = document.getElementById('bitrate-display');
+
+  if (bitrateSlider && bitrateDisplay) {
+    bitrateSlider.addEventListener('input', (e) => {
+      bitrateDisplay.textContent = `${e.target.value} kbps`;
+    });
+  }
+});
