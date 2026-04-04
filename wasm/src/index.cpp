@@ -1,62 +1,56 @@
 #include <emscripten.h>
 #include <cstdio>
-#include <cstdint>
-
+#include "wasm_mp3paper.h"
 #include "lame.h"
 
-// Global variables to store output dimensions
-static int g_staticvar1 = 0;
-static int g_staticvar2 = 0;
-static lame_t g_lame = nullptr;
+static Mp3StateEngine g_engine;
 
+extern "C" {
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" uint8_t *examplefunc1(int x) {
-    // Reset global dimensions at start
-    g_staticvar1 = 0;
-    g_staticvar2 = 0;
-
-    // Reinitialize if there is a previously open encoder state.
-    if (g_lame != nullptr) {
-        lame_close(g_lame);
-        g_lame = nullptr;
-    }
-
-    const int sample_rate = (x > 0) ? x : 44100;
-    g_lame = lame_init();
-    if (g_lame == nullptr) {
-        fprintf(stderr, "lame_init failed\n");
-        return nullptr;
-    }
-
-    lame_set_num_channels(g_lame, 2);
-    lame_set_in_samplerate(g_lame, sample_rate);
-    lame_set_brate(g_lame, 128);
-    lame_set_quality(g_lame, 5);
-
-    const int init_result = lame_init_params(g_lame);
-    g_staticvar1 = sample_rate;
-    g_staticvar2 = init_result;
-
-    fprintf(stdout, "LAME %s init rc=%d, sr=%d\n", get_lame_short_version(), init_result, sample_rate);
-    fflush(stdout);
-
-    if (init_result < 0) {
-        lame_close(g_lame);
-        g_lame = nullptr;
-    }
-
-    return nullptr;
+void mp3_init(int sample_rate, int channels) {
+    g_engine.init(sample_rate, channels);
 }
 
 EMSCRIPTEN_KEEPALIVE
-extern "C" void examplefunc2(uint8_t *data) {
-    (void)data;
-
-    if (g_lame != nullptr) {
-        lame_close(g_lame);
-        g_lame = nullptr;
-        fprintf(stdout, "LAME encoder closed\n");
-        fflush(stdout);
-    }
+void mp3_load_data(const uint8_t* pcm_data, size_t size) {
+    g_engine.load_data(pcm_data, size);
 }
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_set_bitrate(int bitrate) {
+    g_engine.set_bitrate(bitrate);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_start_encoding(StepCallback cb) {
+    g_engine.start_encoding(cb);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_step_polyphase(StepCallback cb) {
+    g_engine.step_polyphase(cb);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_step_psycho(StepCallback cb) {
+    g_engine.step_psycho(cb);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_step_bitalloc(StepCallback cb) {
+    g_engine.step_bitalloc(cb);
+}
+
+// Exposed buffer management for JS -> WASM copying
+EMSCRIPTEN_KEEPALIVE
+uint8_t* mp3_alloc_buffer(size_t size) {
+    return static_cast<uint8_t*>(malloc(size));
+}
+
+EMSCRIPTEN_KEEPALIVE
+void mp3_free_buffer(uint8_t* ptr) {
+    free(ptr);
+}
+
+} // extern "C"
