@@ -26,8 +26,8 @@ As a supplement to my paper, I plan to code a compression demo blown up step-by-
 ## Upload File
 
 {{info:upload-status:No File Selected}}
-{{button:Upload WAV}}
-{{button:Use Example File}}
+{{button:btn-upload:Upload WAV}}
+{{button:btn-example:Use Example File}}
 
 """
 
@@ -40,7 +40,7 @@ Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate
 {{slider:bitrate}}
 {{info:bitrate-display:128 kbps}}
 
-{{button:Encode}}
+{{button:btn-encode:Encode}}
 
 """
 

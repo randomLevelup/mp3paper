@@ -16,9 +16,33 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include "lame.h"
+
+// Payload Contracts for Visualization
+
+struct PolyphasePayload {
+    int frame_index;
+    float subband_magnitudes[32];
+};
+
+struct PsychoPayload {
+    int frame_index;
+    float band_energy[32];
+    float band_threshold[32];
+    float perceptual_entropy;
+};
+
+struct BitAllocPayload {
+    int frame_index;
+    int bits_per_band[32];
+    int total_bits;
+    int reservoir_size;
+    float smr[32];
+};
 
 enum class Mp3State {
     IDLE = 0,
+    LAME_INITIALIZED,
     FILE_LOADED,
     ENCODING_STARTED,
     POLYPHASE_COMPLETE,
@@ -28,7 +52,7 @@ enum class Mp3State {
 };
 
 // Callback type for communicating results back to HTML
-typedef void (*StepCallback)(int state_code, const char* result_data);
+using StepCallback = void (*)(int state_code, const char* result_data);
 
 class Mp3StateEngine {
 public:
@@ -39,7 +63,7 @@ public:
     void load_data(const uint8_t* data, size_t size);
     void set_bitrate(int bitrate);
 
-    void start_encoding(StepCallback cb);
+    void encode(StepCallback cb);
     void step_polyphase(StepCallback cb);
     void step_psycho(StepCallback cb);
     void step_bitalloc(StepCallback cb);
@@ -51,6 +75,8 @@ private:
     int sample_rate_;
     int channels_;
     int bitrate_;
+    std::vector<short> pcm_data_;
+    lame_t lame_ctx_;
 };
 
 #endif

@@ -3,6 +3,12 @@
 #include "wasm_mp3paper.h"
 #include "lame.h"
 
+// suppress intellisense bull crap
+#ifdef __INTELLISENSE__
+#undef EMSCRIPTEN_KEEPALIVE
+#define EMSCRIPTEN_KEEPALIVE
+#endif
+
 static Mp3StateEngine g_engine;
 
 extern "C" {
@@ -23,8 +29,8 @@ void mp3_set_bitrate(int bitrate) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-void mp3_start_encoding(StepCallback cb) {
-    g_engine.start_encoding(cb);
+void mp3_encode(StepCallback cb) {
+    g_engine.encode(cb);
 }
 
 EMSCRIPTEN_KEEPALIVE

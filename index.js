@@ -81,44 +81,106 @@ async function loadMp3PaperWasm() {
 
     console.log('[mp3paper] wasm module initialized');
 
-    if (typeof module.cwrap === 'function') {
-      const examplefunc1 = module.cwrap('examplefunc1', 'number', ['number']);
-      const examplefunc2 = module.cwrap('examplefunc2', null, ['number']);
+    if (typeof module._mp3_init === 'function') {
+      module._mp3_init(44100, 2);
+      console.log('[mp3paper] state engine and LAME initialized');
+      
+      const uploadStatus = document.getElementById('upload-status');
+      const btnUpload = document.getElementById('btn-upload');
+      const btnExample = document.getElementById('btn-example');
+      const btnEncode = document.getElementById('btn-encode');
 
-      const resultPtr = examplefunc1(44100);
-      console.log('[mp3paper] examplefunc1(44100) returned pointer:', resultPtr);
+      async function loadWavData(buffer, filename) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffer = await audioCtx.decodeAudioData(buffer);
+        
+        const numChannels = audioBuffer.numberOfChannels;
+        const length = audioBuffer.length;
+        
+        // Interleave the float channels into 16-bit PCM
+        const interleaved = new Int16Array(length * numChannels);
+        for (let i = 0; i < numChannels; i++) {
+          const channelData = audioBuffer.getChannelData(i);
+          for (let j = 0; j < length; j++) {
+            let val = channelData[j];
+            val = Math.max(-1, Math.min(1, val));
+            interleaved[j * numChannels + i] = val < 0 ? val * 0x8000 : val * 0x7FFF;
+          }
+        }
+        
+        // Update module with actual sample rate and channel count
+        module._mp3_init(audioBuffer.sampleRate, numChannels);
 
-      examplefunc2(0);
-      console.log('[mp3paper] examplefunc2(0) called');
-      return;
-    }
-
-    if (typeof module._examplefunc1 === 'function') {
-      const resultPtr = module._examplefunc1(44100);
-      console.log('[mp3paper] _examplefunc1(44100) returned pointer:', resultPtr);
-
-      if (typeof module._examplefunc2 === 'function') {
-        module._examplefunc2(0);
-        console.log('[mp3paper] _examplefunc2(0) called');
+        const uint8Array = new Uint8Array(interleaved.buffer);
+        const ptr = module._mp3_alloc_buffer(uint8Array.length);
+        module.HEAPU8.set(uint8Array, ptr);
+        
+        module._mp3_load_data(ptr, uint8Array.length);
+        module._mp3_free_buffer(ptr);
+        
+        uploadStatus.textContent = `Loaded: ${filename} (${(uint8Array.length / 1024).toFixed(1)} KB)`;
       }
+
+      if (btnUpload) {
+        btnUpload.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = '.wav';
+          input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            uploadStatus.textContent = "Loading file...";
+            const buffer = await file.arrayBuffer();
+            await loadWavData(buffer, file.name);
+          };
+          input.click();
+        });
+      }
+
+      if (btnExample) {
+        btnExample.addEventListener('click', async () => {
+          try {
+            uploadStatus.textContent = "Downloading example...";
+            const response = await fetch('example.wav');
+            if (!response.ok) throw new Error("Could not fetch example.wav");
+            const buffer = await response.arrayBuffer();
+            await loadWavData(buffer, 'example.wav');
+          } catch (err) {
+            console.error(err);
+            uploadStatus.textContent = "Error loading example.wav";
+          }
+        });
+      }
+
+      const bitrateSlider = document.getElementById('bitrate');
+      const bitrateDisplay = document.getElementById('bitrate-display');
+
+      if (bitrateSlider && bitrateDisplay) {
+        bitrateSlider.addEventListener('input', (e) => {
+          const kbps = parseInt(e.target.value, 10);
+          bitrateDisplay.textContent = `${kbps} kbps`;
+          module._mp3_set_bitrate(kbps);
+        });
+      }
+
+      if (btnEncode) {
+        btnEncode.addEventListener('click', () => {
+          const cbPtr = module.addFunction((stateCode, dataPtr) => {
+            const json = module.UTF8ToString(dataPtr);
+            console.log(`[mp3paper] encode callback state=${stateCode}`, json);
+          }, 'vii');
+          module._mp3_encode(cbPtr);
+          module.removeFunction(cbPtr);
+        });
+      }
+
       return;
     }
 
-    console.warn('[mp3paper] Test exports were not found on the module instance.');
+    console.warn('[mp3paper] mp3 initialization exports were not found.');
   } catch (error) {
     console.error('[mp3paper] Failed to load wasm module:', error);
   }
 }
 
 loadMp3PaperWasm();
-
-document.addEventListener('DOMContentLoaded', () => {
-  const bitrateSlider = document.getElementById('bitrate');
-  const bitrateDisplay = document.getElementById('bitrate-display');
-
-  if (bitrateSlider && bitrateDisplay) {
-    bitrateSlider.addEventListener('input', (e) => {
-      bitrateDisplay.textContent = `${e.target.value} kbps`;
-    });
-  }
-});

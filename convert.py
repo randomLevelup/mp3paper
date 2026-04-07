@@ -120,29 +120,34 @@ def style_card_body_html(html_text: str) -> str:
 	
 	# Replace interactive elemental macros -> HTML
 	html_text = re.sub(
-		r"\{\{button:(.*?)\}\}",
-		r'<button class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">\1</button>',
-		html_text
+		r"\{\{button:(.*?):(.*?)\}\}",
+		r'<button id="\1" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">\2</button>',
+		html_text,
+		flags=re.DOTALL
 	)
 	html_text = re.sub(
 		r"\{\{slider:(.*?)\}\}",
 		r'<div class="mt-6 mb-1"><input type="range" id="\1" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div>',
-		html_text
+		html_text,
+		flags=re.DOTALL
 	)
 	html_text = re.sub(
 		r"\{\{info:(.*?):(.*?)\}\}",
 		r'<p id="\1" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">\2</p>',
-		html_text
+		html_text,
+		flags=re.DOTALL
 	)
 	html_text = re.sub(
 		r"\{\{hidden_button:(.*?):(.*?)\}\}",
 		r'<button id="\1" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">\2</button>',
-		html_text
+		html_text,
+		flags=re.DOTALL
 	)
 	html_text = re.sub(
 		r"\{\{hidden_image:(.*?):(.*?)\}\}",
 		r'<img id="\1" src="\2" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4">',
-		html_text
+		html_text,
+		flags=re.DOTALL
 	)
 	return html_text
 
