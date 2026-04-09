@@ -152,6 +152,24 @@ def style_card_body_html(html_text: str) -> str:
 	return html_text
 
 
+def style_footer_html(html_text: str) -> str:
+	html_text = re.sub(
+		r"<p>References:</p>",
+		r'<p class="text-xl font-semibold mb-6 text-primary">References:</p>\n<div class="references-list">',
+		html_text,
+		flags=re.IGNORECASE
+	)
+	html_text = re.sub(
+		r"<p>\[(\d+)\]\s*(.*?)</p>",
+		r'<div class="reference-item"><span class="reference-number">[\1]</span><span class="reference-text">\2</span></div>',
+		html_text,
+		flags=re.DOTALL | re.IGNORECASE
+	)
+	if '<div class="references-list' in html_text:
+		html_text += "\n</div>"
+	return html_text
+
+
 def replace_eyebrows(markdown_text: str) -> str:
 	out = []
 	for line in markdown_text.splitlines():
@@ -254,6 +272,13 @@ def main() -> None:
 	markdown_text = INPUT_FILE.read_text(encoding="utf-8")
 	template = OUTPUT_FILE.read_text(encoding="utf-8")
 	site_title, markdown_text = pop_title(markdown_text)
+
+	footer_markdown = ""
+	if "{footer}" in markdown_text:
+		parts = markdown_text.split("{footer}", 1)
+		markdown_text = parts[0].strip()
+		footer_markdown = parts[1].strip()
+
 	blocks = split_blocks(markdown_text)
 	sections = extract_sections(blocks)
 
@@ -267,7 +292,13 @@ def main() -> None:
 		else:
 			rendered.append(render_card(text))
 
-	rendered.append('<footer class="page-footer">\n  <p>References: 😜</p>\n</footer>')
+	if footer_markdown:
+		footer_html = style_footer_html(run_pandoc(footer_markdown))
+		footer_html = "\n".join(f"  {line}" for line in footer_html.splitlines())
+		rendered.append(f'<footer class="page-footer">\n{footer_html}\n</footer>')
+	else:
+		rendered.append('<footer class="page-footer">\n  <p>References: 😜</p>\n</footer>')
+
 	main_content = "\n\n".join(block for block in rendered if block.strip())
 	main_content = process_external_links(main_content)
 

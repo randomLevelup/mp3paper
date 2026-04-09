@@ -1,14 +1,14 @@
 
 # The MP3 Paper
 
-*"I've been reading lips for 20 years... I'm a rock musician. I'm deaf. I can't hear what you're saying."*
+*"Small is the new big.... If we can make your music and video files smaller, we can make cancer smaller. And hunger. And AIDS."*
 
-*- Dave Grohl*
+*- Gavin Belson, Silicon Valley*
 
 ---
 
 ~Introduction~
-## What Am I Saying?
+## So You Think You Know MP3...
 
 Lossy compression... data discarded? Describe the mp3 format by *decoding* the psychology that it employs? Are there a certain group of people who we trust to define perceptibility? How has audio compression affected and been affected by both the economy of *data* and the economy of, well, money? As a supplement to my paper, I plan to code a compression demo blown up step-by-step with helpful visualizations.
 
@@ -79,6 +79,30 @@ And now we know...
 ---
 
 ~Parts Two, Three etc.~
-## The Actual Paper
+## Rest of the Paper
 
-*Actual paper pending...*
+*paper pending...*
+
+
+{footer}
+
+References:
+
+\[1]
+T. Brock, “Articles of Incorporation,” _Silicon Valley_, Apr. 20, 2014.
+
+
+\[2]
+H. von Helmholtz, _On the sensations of tone as a physiological basis for the theory of music_, Second English edition. New York: Dover Publications, 1954.
+
+
+\[3]
+J. Herre, S. Quackenbush, M. Kim, and J. Skoglund, “Perceptual Audio Coding: A 40-Year Historical Perspective,” in _ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)_, Apr. 2025, pp. 1–5. doi: [10.1109/ICASSP49660.2025.10887760](https://doi.org/10.1109/ICASSP49660.2025.10887760).
+
+
+\[4]
+I. V. McLoughlin, Ed., “Psychoacoustics,” in _Speech and Audio Processing: A MATLAB®-based Approach_, Cambridge: Cambridge University Press, 2016, pp. 109–139. doi: [10.1017/CBO9781316084205.007](https://doi.org/10.1017/CBO9781316084205.007).
+
+
+\[5]
+J. Sterne, _The audible past: cultural origins of sound reproduction_. Durham: Duke University Press, 2003.

@@ -79,8 +79,8 @@ module.exports = {
                 '.text-paragraph': {
                     '@apply text-lg leading-loose mb-10 max-w-4xl': {},
                 },
-                '.text-paragraph a': {
-                    '@apply underline': {},
+                '.main-container a': {
+                    '@apply underline underline-offset-[0.1em]': {},
                 },
                 '.bullet-list': {
                     '@apply list-disc pl-5 text-[#2c2e33] space-y-2': {},
@@ -106,7 +106,19 @@ module.exports = {
 
                 // Footer Components
                 '.page-footer': {
-                    '@apply mt-16 text-center text-[#2c2e33]': {},
+                    '@apply mt-16 text-[#2c2e33] text-left': {},
+                },
+                '.references-list': {
+                    '@apply max-w-4xl': {},
+                },
+                '.reference-item': {
+                    '@apply flex items-start gap-4 mb-10': {},
+                },
+                '.reference-number': {
+                    '@apply shrink-0 font-medium text-[#2c2e33] min-w-[2.5ch] text-right': {},
+                },
+                '.reference-text': {
+                    '@apply text-[#2c2e33] w-full leading-relaxed': {},
                 },
             });
         },
