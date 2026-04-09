@@ -1,7 +1,7 @@
 
 # The MP3 Paper
 
-*"Small is the new big.... If we can make your music and video files smaller, we can make cancer smaller. And hunger. And AIDS."*
+*"Small is the new big.... If we can make your audio and video files smaller, we can make cancer smaller. And hunger. And AIDS."*
 
 *- Gavin Belson, Silicon Valley*
 
@@ -50,7 +50,7 @@ Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate
 We run the data through a custom filterbank to divide the audio signal into 32 equal-width frequency subbands. The human ear has a limited resolution that can be expressed in terms of critical bandwidths less than 100Hz and more than 4kHz. Within a critical bandwidth the human ear blurs frequencies. Thus the filter bank creates equal-width frequency subbands that correlate to the critical bandwidths in a method diagrammed in the following figure. For the visualization, I want to show this subband split visually, but I also want to somehow incorporate stats from the actual conversion, so that the visualization is unique to the audio file.
 
 {{hidden_button:btn-polyphase:Run}}
-{{hidden_image:img-polyphase:testimage.svg}}
+{{info:info-polyphase:Waiting for Run...}}
 
 """
 
@@ -60,7 +60,7 @@ We run the data through a custom filterbank to divide the audio signal into 32 e
 Psychoacoustics has examined the concept of auditory masking and its effect on compression. Within each (critical) subband where blurring occurs the presence of a strong tonal signal can mask a region of weaker signals. For this card, we want to somehow visualize some of the results psychoacoustic analysis in a digestible way.
 
 {{hidden_button:btn-psycho:Run}}
-{{hidden_image:img-psycho:testimage.svg}}
+{{info:info-psycho:Waiting for Run...}}
 
 """
 
@@ -70,7 +70,7 @@ Psychoacoustics has examined the concept of auditory masking and its effect on c
 Through an iterative algorithm, the bit allocation uses information from the psychoacoustic model to determine the number of code bits to be allocated to each subband. This process can be described using the following formula: MNRdB = SNRdB - SMRdB. For this visualization, we want to build off the psychoacoustics results and show which bands are getting more bits.
 
 {{hidden_button:btn-bitalloc:Run}}
-{{hidden_image:img-bitalloc:testimage.svg}}
+{{info:info-bitalloc:Waiting for Run...}}
 
 """
 

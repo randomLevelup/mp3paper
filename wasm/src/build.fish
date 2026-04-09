@@ -10,6 +10,7 @@ set LAME_SRC \
     lame/libmp3lame/gain_analysis.c \
     lame/libmp3lame/id3tag.c \
     lame/libmp3lame/lame.c \
+    lame/libmp3lame/mp3paper_analysis.c \
     lame/libmp3lame/newmdct.c \
     lame/libmp3lame/presets.c \
     lame/libmp3lame/psymodel.c \

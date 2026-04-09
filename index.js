@@ -89,6 +89,12 @@ async function loadMp3PaperWasm() {
       const btnUpload = document.getElementById('btn-upload');
       const btnExample = document.getElementById('btn-example');
       const btnEncode = document.getElementById('btn-encode');
+      const btnPolyphase = document.getElementById('btn-polyphase');
+      const infoPolyphase = document.getElementById('info-polyphase');
+      const btnPsycho = document.getElementById('btn-psycho');
+      const infoPsycho = document.getElementById('info-psycho');
+      const btnBitalloc = document.getElementById('btn-bitalloc');
+      const infoBitalloc = document.getElementById('info-bitalloc');
 
       async function loadWavData(buffer, filename) {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -168,8 +174,61 @@ async function loadMp3PaperWasm() {
           const cbPtr = module.addFunction((stateCode, dataPtr) => {
             const json = module.UTF8ToString(dataPtr);
             console.log(`[mp3paper] encode callback state=${stateCode}`, json);
+            if (stateCode >= 2) {
+              if (btnPolyphase) btnPolyphase.classList.remove('hidden');
+            }
           }, 'vii');
+          
+          // Configure collection (mode: 1=Periodic, interval: 100)
+          module._mp3_set_collection_config(1, 100, 0, 10);
           module._mp3_encode(cbPtr);
+          module.removeFunction(cbPtr);
+        });
+      }
+
+      if (btnPolyphase) {
+        btnPolyphase.addEventListener('click', () => {
+          const cbPtr = module.addFunction((stateCode, dataPtr) => {
+            const json = module.UTF8ToString(dataPtr);
+            const data = JSON.parse(json);
+            if (infoPolyphase) {
+              infoPolyphase.textContent = `Received polyphase data for ${data.length} frames.`;
+            }
+            if (btnPsycho) btnPsycho.classList.remove('hidden');
+            console.log(`[mp3paper] polyphase:`, data);
+          }, 'vii');
+          module._mp3_step_polyphase(cbPtr);
+          module.removeFunction(cbPtr);
+        });
+      }
+
+      if (btnPsycho) {
+        btnPsycho.addEventListener('click', () => {
+          const cbPtr = module.addFunction((stateCode, dataPtr) => {
+            const json = module.UTF8ToString(dataPtr);
+            const data = JSON.parse(json);
+            if (infoPsycho) {
+              infoPsycho.textContent = `Received psycho data for ${data.length} frames.`;
+            }
+            if (btnBitalloc) btnBitalloc.classList.remove('hidden');
+            console.log(`[mp3paper] psycho:`, data);
+          }, 'vii');
+          module._mp3_step_psycho(cbPtr);
+          module.removeFunction(cbPtr);
+        });
+      }
+
+      if (btnBitalloc) {
+        btnBitalloc.addEventListener('click', () => {
+          const cbPtr = module.addFunction((stateCode, dataPtr) => {
+            const json = module.UTF8ToString(dataPtr);
+            const data = JSON.parse(json);
+            if (infoBitalloc) {
+              infoBitalloc.textContent = `Received bitalloc data for ${data.length} frames.`;
+            }
+            console.log(`[mp3paper] bitalloc:`, data);
+          }, 'vii');
+          module._mp3_step_bitalloc(cbPtr);
           module.removeFunction(cbPtr);
         });
       }
