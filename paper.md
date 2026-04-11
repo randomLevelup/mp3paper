@@ -1,4 +1,6 @@
 
+# The MP3 Paper
+
 *Note: This first draft is more of an outline. Most of my writing so far has been code, thus the demo is mostly up and running but the rest is yet to come.*
 
 ---
