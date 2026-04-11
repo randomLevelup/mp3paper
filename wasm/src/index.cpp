@@ -53,6 +53,16 @@ void mp3_step_bitalloc(StepCallback cb) {
     g_engine.step_bitalloc(cb);
 }
 
+EMSCRIPTEN_KEEPALIVE
+const uint8_t* mp3_get_result_data() {
+    return g_engine.get_mp3_data();
+}
+
+EMSCRIPTEN_KEEPALIVE
+size_t mp3_get_result_size() {
+    return g_engine.get_mp3_size();
+}
+
 // Exposed buffer management for JS -> WASM copying
 EMSCRIPTEN_KEEPALIVE
 uint8_t* mp3_alloc_buffer(size_t size) {

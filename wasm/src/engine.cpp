@@ -133,11 +133,29 @@ void Mp3StateEngine::on_bitalloc_record(void* user_data, const mp3paper_bitalloc
 }
 
 void Mp3StateEngine::encode(StepCallback cb) {
-    if (current_state_ != Mp3State::FILE_LOADED) {
-        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: File not loaded or LAME not initialized.");
+    if (pcm_data_.empty()) {
+        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: No audio data loaded.");
+        return;
+    }
+
+    if (lame_ctx_) {
+        lame_close(lame_ctx_);
+    }
+    
+    lame_ctx_ = lame_init();
+    if (!lame_ctx_) {
+        current_state_ = Mp3State::ERROR_STATE;
+        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Failed to initialize LAME encoder context.");
         return;
     }
     
+    lame_set_in_samplerate(lame_ctx_, sample_rate_);
+    lame_set_num_channels(lame_ctx_, channels_);
+    lame_set_brate(lame_ctx_, bitrate_);
+    
+    const int total_frames = static_cast<int>(pcm_data_.size() / static_cast<size_t>(channels_));
+    lame_set_num_samples(lame_ctx_, total_frames);
+
     if (lame_init_params(lame_ctx_) < 0) {
         std::cout << "[WASM] Error: lame_init_params failed." << std::endl;
         current_state_ = Mp3State::ERROR_STATE;
@@ -146,6 +164,7 @@ void Mp3StateEngine::encode(StepCallback cb) {
     }
 
     current_state_ = Mp3State::ENCODING_STARTED;
+    mp3_data_.clear();
 
     analysis_data_ = EncodingAnalysisData{};
     analysis_data_.sampling = collection_config_;
@@ -172,7 +191,6 @@ void Mp3StateEngine::encode(StepCallback cb) {
 
     constexpr int kPcmChunkSamples = 1152;
     std::vector<unsigned char> mp3_buffer(8192);
-    const int total_frames = static_cast<int>(pcm_data_.size() / static_cast<size_t>(channels_));
     int offset_frames = 0;
     int encode_status = 0;
 
@@ -201,11 +219,18 @@ void Mp3StateEngine::encode(StepCallback cb) {
             break;
         }
 
+        if (encode_status > 0) {
+            mp3_data_.insert(mp3_data_.end(), mp3_buffer.begin(), mp3_buffer.begin() + encode_status);
+        }
+
         offset_frames += chunk_frames;
     }
 
     if (encode_status >= 0) {
         encode_status = lame_encode_flush(lame_ctx_, mp3_buffer.data(), static_cast<int>(mp3_buffer.size()));
+        if (encode_status > 0) {
+            mp3_data_.insert(mp3_data_.end(), mp3_buffer.begin(), mp3_buffer.begin() + encode_status);
+        }
     }
 
     mp3paper_analysis_attach(lame_ctx_, nullptr);

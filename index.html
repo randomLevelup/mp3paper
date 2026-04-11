@@ -53,6 +53,10 @@
 
     <!-- Main Content -->
     <main class="main-container">
+      <p class="text-paragraph"><em>Note: This first draft is more of an outline. Most of my writing
+      so far has been code, thus the demo is mostly up and running but the
+      rest is yet to come.</em></p>
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Introduction
       </div>
@@ -79,13 +83,13 @@
       additively, such that every excitation of air from any source, no matter
       its strength, contributes to a single perceived stream of sound which
       is, “in short, a tumbled entanglement of the most different kinds of
-      motion, complicated beyond conception [2, p. 26].”</p>
+      motion, complicated beyond conception [1, p. 26].”</p>
       <p class="text-paragraph">To be discussed:</p>
       <ul class="bullet-list mt-4 mb-10 max-w-4xl">
-      <li>Hermann Helmholtz</li>
+      <li>Helmholtz’ <em>Sensations of Tone</em></li>
       <li>Bell’s phonograph</li>
       <li>Edison’s phonograph</li>
-      <li>Bray and Wever’s cat experiments</li>
+      <li>The industrial revolution</li>
       <li>Emergence of perceptual analysis and coding techniques</li>
       </ul>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
@@ -100,7 +104,7 @@
       distill some of the wisdom attained in those years into an interactive
       demo of the mp3 algorithm, blown up step-by-step with helpful
       visualizations. The goal is to show the nature of the data that’s being
-      discarded, and the data that’s being kept around.</p>
+      discarded, and of the data that’s being kept around.</p>
 
       <div class="card">
         <p class="eyebrow">Step One</p>
@@ -121,7 +125,8 @@
         <div class="card-paragraph">
           <p><div class="mt-6 mb-1"><input type="range" id="bitrate" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div><br />
           <p id="bitrate-display" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">128 kbps</p></p>
-          <p><button id="btn-encode" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Encode</button></p>
+          <p><button id="btn-encode" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Encode</button><br />
+          <p id="info-encode" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium"></p></p>
         </div>
       </div>
 
@@ -135,7 +140,8 @@
           <div class="mt-6">
 
           </div>
-          <p><button id="btn-polyphase" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p><img id="img-polyphase" src="resource/card1.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <button id="btn-polyphase" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-polyphase" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
       </div>
@@ -145,13 +151,12 @@
         <div class="card-paragraph">
           <p><em>Masking</em> is a primarily neurological phenomenon wherein
           “louder sounds hide, i.e., ‘mask’, softer sounds in their spectral or
-          temporal vicinity” [3]. That is to say, masking causes us to lose track
+          temporal vicinity” [2]. That is to say, masking causes us to lose track
           of the fainter sounds when a loud sound is introduced. Certain signals
-          are better maskers than others (white noise, for instance). As we’ll
-          cover, parts of the mp3 algorithm involve ‘replacing’ (for lack of a
-          better term) existing audio data with noise (random aperiodic signals).
-          This effect is essential for perceptual coding algorithms to work
-          properly.</p>
+          are better maskers than others (white noise, for instance). This part of
+          the mp3 algorithm involves ‘replacing’ weaker signals with noise (random
+          aperiodic signals). This effect is essential for perceptual coding
+          algorithms to work properly.</p>
           <p>Psychoacoustics has examined the concept of auditory masking and its
           effect on compression. The human ear has ‘critical subbands’ where
           masking occurs more conspicuously. This visualization will show some of
@@ -161,7 +166,8 @@
           <div class="mt-6">
 
           </div>
-          <p><button id="btn-psycho" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p><img id="img-psycho" src="resource/card2.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <button id="btn-psycho" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-psycho" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
       </div>
@@ -178,7 +184,8 @@
           <div class="mt-6">
 
           </div>
-          <p><button id="btn-bitalloc" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p><img id="img-bitalloc" src="resource/card3.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <button id="btn-bitalloc" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-bitalloc" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
       </div>
@@ -194,7 +201,7 @@
         </div>
       </div>
 
-      <p class="text-paragraph">And now we know…</p>
+      <p class="text-paragraph">And now you know. :)</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Parts Three, Four etc.
@@ -212,20 +219,17 @@
       <footer class="page-footer">
         <p class="text-xl font-semibold mb-6 text-primary">References:</p>
         <div class="references-list">
-        <div class="reference-item"><span class="reference-number">[1]</span><span class="reference-text">T. Brock, “Articles of Incorporation,” <em>Silicon Valley</em>,
-        Apr. 20, 2014.</span></div>
-        <div class="reference-item"><span class="reference-number">[2]</span><span class="reference-text">H. von Helmholtz, <em>On the sensations of tone as a
+        <div class="reference-item"><span class="reference-number">[1]</span><span class="reference-text">H. von Helmholtz, <em>On the sensations of tone as a
         physiological basis for the theory of music</em>, Second English
         edition. New York: Dover Publications, 1954.</span></div>
-        <div class="reference-item"><span class="reference-number">[3]</span><span class="reference-text">J. Herre, S. Quackenbush, M. Kim, and J. Skoglund, “Perceptual
+        <div class="reference-item"><span class="reference-number">[2]</span><span class="reference-text">J. Herre, S. Quackenbush, M. Kim, and J. Skoglund, “Perceptual
         Audio Coding: A 40-Year Historical Perspective,” in <em>ICASSP 2025 -
         2025 IEEE International Conference on Acoustics, Speech and Signal
         Processing (ICASSP)</em>, Apr. 2025, pp. 1–5. doi: <a target="_blank" href="https://doi.org/10.1109/ICASSP49660.2025.10887760">10.1109/ICASSP49660.2025.10887760</a>.</span></div>
-        <div class="reference-item"><span class="reference-number">[4]</span><span class="reference-text">I. V. McLoughlin, Ed., “Psychoacoustics,” in <em>Speech and Audio
-        Processing: A MATLAB®-based Approach</em>, Cambridge: Cambridge
-        University Press, 2016, pp. 109–139. doi: <a target="_blank" href="https://doi.org/10.1017/CBO9781316084205.007">10.1017/CBO9781316084205.007</a>.</span></div>
-        <div class="reference-item"><span class="reference-number">[5]</span><span class="reference-text">J. Sterne, <em>The audible past: cultural origins of sound
+        <div class="reference-item"><span class="reference-number">[3]</span><span class="reference-text">J. Sterne, <em>The audible past: cultural origins of sound
         reproduction</em>. Durham: Duke University Press, 2003.</span></div>
+        <div class="reference-item"><span class="reference-number">[4]</span><span class="reference-text">J. Sterne, <em>MP3</em>. in The Meaning of a Format. Duke
+        University Press, 2012. doi: <a target="_blank" href="https://doi.org/10.1515/9780822395522">10.1515/9780822395522</a>.</span></div>
         </div>
       </footer>
     </main>

@@ -150,6 +150,12 @@ def style_card_body_html(html_text: str) -> str:
 		html_text,
 		flags=re.DOTALL
 	)
+	html_text = re.sub(
+		r"\{\{hidden_audio:(.*?):(.*?)\}\}",
+		r'<audio id="\1" src="\2" class="hidden w-full mt-4 mb-4" controls></audio>',
+		html_text,
+		flags=re.DOTALL
+	)
 	return html_text
 
 

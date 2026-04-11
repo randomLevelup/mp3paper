@@ -1,4 +1,8 @@
 
+*Note: This first draft is more of an outline. Most of my writing so far has been code, thus the demo is mostly up and running but the rest is yet to come.*
+
+---
+
 ~Introduction~
 ## So You Think You Know MP3...
 
@@ -13,14 +17,14 @@ If you're curious, here's [the code](https://github.com/randomLevelup/mp3paper).
 ~Part One~
 ## A Brief History
 
-As we know, sound waves propagate through air and interfere additively, such that every excitation of air from any source, no matter its strength, contributes to a single perceived stream of sound which is, "in short, a tumbled entanglement of the most different kinds of motion, complicated beyond conception [2, p. 26]."
+As we know, sound waves propagate through air and interfere additively, such that every excitation of air from any source, no matter its strength, contributes to a single perceived stream of sound which is, "in short, a tumbled entanglement of the most different kinds of motion, complicated beyond conception [1, p. 26]."
 
 To be discussed:
 
-- Hermann Helmholtz
+- Helmholtz' *Sensations of Tone*
 - Bell's phonograph
 - Edison's phonograph
-- Bray and Wever's cat experiments
+- The industrial revolution
 - Emergence of perceptual analysis and coding techniques
 
 ---
@@ -28,7 +32,7 @@ To be discussed:
 ~Part Two~
 ## Demonstration
 
-Helmholtz was correct in declaring the mechanisms of wave composition *complicated*, though via the progression of his own work, and the nearly two centuries of science that succeeded it, the qualifier 'beyond conception' is proven hyperbole. In this section, I hope to distill some of the wisdom attained in those years into an interactive demo of the mp3 algorithm, blown up step-by-step with helpful visualizations. The goal is to show the nature of the data that's being discarded, and the data that's being kept around.
+Helmholtz was correct in declaring the mechanisms of wave composition *complicated*, though via the progression of his own work, and the nearly two centuries of science that succeeded it, the qualifier 'beyond conception' is proven hyperbole. In this section, I hope to distill some of the wisdom attained in those years into an interactive demo of the mp3 algorithm, blown up step-by-step with helpful visualizations. The goal is to show the nature of the data that's being discarded, and of the data that's being kept around.
 
 """
 ~Step One~
@@ -50,6 +54,7 @@ Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate
 {{info:bitrate-display:128 kbps}}
 
 {{button:btn-encode:Encode}}
+{{info:info-encode:}}
 
 """
 
@@ -58,6 +63,7 @@ Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate
 
 We run the data through a custom filterbank to divide the audio signal into 32 equal-width frequency subbands. For the visualization, We show the subband split visually, alongside other stats from this step in the encoding process.
 
+{{hidden_image:img-polyphase:resource/card1.jpg}}
 {{hidden_button:btn-polyphase:Run}}
 {{info:info-polyphase:Waiting for Run...}}
 
@@ -66,10 +72,11 @@ We run the data through a custom filterbank to divide the audio signal into 32 e
 """
 ~Algorithm: Psychoacoustics Modeling~
 
-*Masking* is a primarily neurological phenomenon wherein "louder sounds hide, i.e., 'mask', softer sounds in their spectral or temporal vicinity" \[3]. That is to say, masking causes us to lose track of the fainter sounds when a loud sound is introduced. Certain signals are better maskers than others (white noise, for instance). As we'll cover, parts of the mp3 algorithm involve 'replacing' (for lack of a better term) existing audio data with noise (random aperiodic signals). This effect is essential for perceptual coding algorithms to work properly.
+*Masking* is a primarily neurological phenomenon wherein "louder sounds hide, i.e., 'mask', softer sounds in their spectral or temporal vicinity" \[2]. That is to say, masking causes us to lose track of the fainter sounds when a loud sound is introduced. Certain signals are better maskers than others (white noise, for instance). This part of the mp3 algorithm involves 'replacing' weaker signals with noise (random aperiodic signals). This effect is essential for perceptual coding algorithms to work properly.
 
 Psychoacoustics has examined the concept of auditory masking and its effect on compression. The human ear has 'critical subbands' where masking occurs more conspicuously. This visualization will show some of that subband analysis in a digestible way. In this step, each visualization should be quite unique to the audio file that we're encoding.
 
+{{hidden_image:img-psycho:resource/card2.jpg}}
 {{hidden_button:btn-psycho:Run}}
 {{info:info-psycho:Waiting for Run...}}
 
@@ -80,6 +87,7 @@ Psychoacoustics has examined the concept of auditory masking and its effect on c
 
 The bit allocation uses information from the psychoacoustic model to determine the number of code bits to be allocated to each subband. This process can be described using the following formula: `MNRdB = SNRdB - SMRdB`. For this visualization, we want to build off the psychoacoustics results and show which bands are getting more bits.
 
+{{hidden_image:img-bitalloc:resource/card3.jpg}}
 {{hidden_button:btn-bitalloc:Run}}
 {{info:info-bitalloc:Waiting for Run...}}
 
@@ -94,7 +102,7 @@ Listen to the resulting mp3 file:
 
 """
 
-And now we know...
+And now you know. :)
 
 ---
 
@@ -115,20 +123,16 @@ Subjects to discuss:
 References:
 
 \[1]
-T. Brock, “Articles of Incorporation,” _Silicon Valley_, Apr. 20, 2014.
-
-
-\[2]
 H. von Helmholtz, _On the sensations of tone as a physiological basis for the theory of music_, Second English edition. New York: Dover Publications, 1954.
 
 
-\[3]
+\[2]
 J. Herre, S. Quackenbush, M. Kim, and J. Skoglund, “Perceptual Audio Coding: A 40-Year Historical Perspective,” in _ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)_, Apr. 2025, pp. 1–5. doi: [10.1109/ICASSP49660.2025.10887760](https://doi.org/10.1109/ICASSP49660.2025.10887760).
 
 
-\[4]
-I. V. McLoughlin, Ed., “Psychoacoustics,” in _Speech and Audio Processing: A MATLAB®-based Approach_, Cambridge: Cambridge University Press, 2016, pp. 109–139. doi: [10.1017/CBO9781316084205.007](https://doi.org/10.1017/CBO9781316084205.007).
-
-
-\[5]
+\[3]
 J. Sterne, _The audible past: cultural origins of sound reproduction_. Durham: Duke University Press, 2003.
+
+
+\[4]
+J. Sterne, _MP3_. in The Meaning of a Format. Duke University Press, 2012. doi: [10.1515/9780822395522](https://doi.org/10.1515/9780822395522).

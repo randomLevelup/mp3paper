@@ -89,14 +89,83 @@ async function loadMp3PaperWasm() {
       const btnUpload = document.getElementById('btn-upload');
       const btnExample = document.getElementById('btn-example');
       const btnEncode = document.getElementById('btn-encode');
+      const infoEncode = document.getElementById('info-encode');
       const btnPolyphase = document.getElementById('btn-polyphase');
       const infoPolyphase = document.getElementById('info-polyphase');
       const btnPsycho = document.getElementById('btn-psycho');
       const infoPsycho = document.getElementById('info-psycho');
       const btnBitalloc = document.getElementById('btn-bitalloc');
       const infoBitalloc = document.getElementById('info-bitalloc');
+      const audioResult = document.getElementById('audio-result');
+      const imgPolyphase = document.getElementById('img-polyphase');
+      const imgPsycho = document.getElementById('img-psycho');
+      const imgBitalloc = document.getElementById('img-bitalloc');
+      let resultAudioUrl = null;
+
+      function clearRenderedAudio() {
+        if (imgPolyphase) imgPolyphase.classList.add('hidden');
+        if (imgPsycho) imgPsycho.classList.add('hidden');
+        if (imgBitalloc) imgBitalloc.classList.add('hidden');
+        
+        if (infoEncode) infoEncode.textContent = '';
+        if (infoPolyphase) infoPolyphase.textContent = 'Waiting for Run...';
+        if (infoPsycho) infoPsycho.textContent = 'Waiting for Run...';
+        if (infoBitalloc) infoBitalloc.textContent = 'Waiting for Run...';
+
+        if (btnPolyphase) {
+          btnPolyphase.classList.add('hidden');
+          btnPolyphase.textContent = 'Run';
+        }
+        if (btnPsycho) {
+          btnPsycho.classList.add('hidden');
+          btnPsycho.textContent = 'Run';
+        }
+        if (btnBitalloc) {
+          btnBitalloc.classList.add('hidden');
+          btnBitalloc.textContent = 'Run';
+        }
+        
+        if (!audioResult) {
+          return;
+        }
+        audioResult.pause();
+        audioResult.removeAttribute('src');
+        audioResult.load();
+        audioResult.classList.add('hidden');
+        if (resultAudioUrl) {
+          URL.revokeObjectURL(resultAudioUrl);
+          resultAudioUrl = null;
+        }
+      }
+
+      function renderEncodedAudio() {
+        if (!audioResult) {
+          return;
+        }
+        if (typeof module._mp3_get_result_data !== 'function' || typeof module._mp3_get_result_size !== 'function') {
+          console.warn('[mp3paper] result-data exports are unavailable.');
+          return;
+        }
+
+        const size = module._mp3_get_result_size();
+        const ptr = module._mp3_get_result_data();
+        if (!ptr || size <= 0) {
+          console.warn('[mp3paper] encoded result buffer is empty.');
+          return;
+        }
+
+        const copiedBytes = new Uint8Array(module.HEAPU8.subarray(ptr, ptr + size));
+        const blob = new Blob([copiedBytes], { type: 'audio/mpeg' });
+        if (resultAudioUrl) {
+          URL.revokeObjectURL(resultAudioUrl);
+        }
+        resultAudioUrl = URL.createObjectURL(blob);
+        audioResult.src = resultAudioUrl;
+        audioResult.classList.remove('hidden');
+      }
 
       async function loadWavData(buffer, filename) {
+        clearRenderedAudio();
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const audioBuffer = await audioCtx.decodeAudioData(buffer);
         
@@ -171,11 +240,26 @@ async function loadMp3PaperWasm() {
 
       if (btnEncode) {
         btnEncode.addEventListener('click', () => {
+          if (infoEncode) infoEncode.textContent = 'Encoding...';
           const cbPtr = module.addFunction((stateCode, dataPtr) => {
             const json = module.UTF8ToString(dataPtr);
             console.log(`[mp3paper] encode callback state=${stateCode}`, json);
             if (stateCode >= 2) {
-              if (btnPolyphase) btnPolyphase.classList.remove('hidden');
+              if (infoEncode) infoEncode.textContent = 'Encoding start.... scroll down to proceed to the next steps.';
+              
+              if (btnPolyphase) {
+                if (!btnPolyphase.classList.contains('hidden')) {
+                  btnPolyphase.textContent = 'Update';
+                } else {
+                  btnPolyphase.classList.remove('hidden');
+                }
+              }
+              if (btnPsycho && !btnPsycho.classList.contains('hidden')) btnPsycho.textContent = 'Update';
+              if (btnBitalloc && !btnBitalloc.classList.contains('hidden')) btnBitalloc.textContent = 'Update';
+              
+              if (audioResult && !audioResult.classList.contains('hidden')) {
+                renderEncodedAudio();
+              }
             }
           }, 'vii');
           
@@ -194,6 +278,7 @@ async function loadMp3PaperWasm() {
             if (infoPolyphase) {
               infoPolyphase.textContent = `Received polyphase data for ${data.length} frames.`;
             }
+            if (imgPolyphase) imgPolyphase.classList.remove('hidden');
             if (btnPsycho) btnPsycho.classList.remove('hidden');
             console.log(`[mp3paper] polyphase:`, data);
           }, 'vii');
@@ -210,6 +295,7 @@ async function loadMp3PaperWasm() {
             if (infoPsycho) {
               infoPsycho.textContent = `Received psycho data for ${data.length} frames.`;
             }
+            if (imgPsycho) imgPsycho.classList.remove('hidden');
             if (btnBitalloc) btnBitalloc.classList.remove('hidden');
             console.log(`[mp3paper] psycho:`, data);
           }, 'vii');
@@ -226,6 +312,8 @@ async function loadMp3PaperWasm() {
             if (infoBitalloc) {
               infoBitalloc.textContent = `Received bitalloc data for ${data.length} frames.`;
             }
+            if (imgBitalloc) imgBitalloc.classList.remove('hidden');
+            renderEncodedAudio();
             console.log(`[mp3paper] bitalloc:`, data);
           }, 'vii');
           module._mp3_step_bitalloc(cbPtr);

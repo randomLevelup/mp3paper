@@ -116,6 +116,9 @@ public:
     void step_psycho(StepCallback cb);
     void step_bitalloc(StepCallback cb);
 
+    const uint8_t* get_mp3_data() const { return mp3_data_.data(); }
+    size_t get_mp3_size() const { return mp3_data_.size(); }
+
     Mp3State get_current_state() const { return current_state_; }
 
 private:
@@ -129,6 +132,7 @@ private:
     int channels_;
     int bitrate_;
     std::vector<short> pcm_data_;
+    std::vector<uint8_t> mp3_data_;
     FrameCollectionConfig collection_config_{};
     EncodingAnalysisData analysis_data_{};
     lame_t lame_ctx_;
