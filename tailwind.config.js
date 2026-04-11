@@ -77,7 +77,7 @@ module.exports = {
                     '@apply w-full lg:w-[78%] xl2:w-[74%] px-4 lg:px-12 py-8 lg:ml-[22%] xl2:ml-[26%] text-[#2c2e33]': {},
                 },
                 '.text-paragraph': {
-                    '@apply text-lg leading-loose mb-10 max-w-4xl': {},
+                    '@apply text-base leading-loose mb-10 max-w-4xl': {},
                 },
                 '.main-container a': {
                     '@apply underline underline-offset-[0.1em]': {},

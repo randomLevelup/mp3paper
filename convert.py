@@ -7,9 +7,10 @@ INPUT_FILE = Path("paper.md")
 OUTPUT_FILE = Path("index.html")
 
 
-def run_pandoc(markdown_text: str) -> str:
+def run_pandoc(markdown_text: str, hard_breaks: bool = False) -> str:
+	fmt = "markdown+hard_line_breaks" if hard_breaks else "markdown"
 	return subprocess.run(
-		["pandoc", "-f", "markdown", "-t", "html5"],
+		["pandoc", "-f", fmt, "-t", "html5"],
 		input=markdown_text,
 		text=True,
 		capture_output=True,
@@ -228,8 +229,20 @@ def render_card(markdown_block: str) -> str:
 	if title:
 		out.append(f'  <h2 class="card-heading">{html.escape(title)}</h2>')
 	if body:
-		body_html = style_card_body_html(run_pandoc(body))
-		out.append('  <div class="content-paragraph">')
+		lines = body.splitlines()
+		new_lines = []
+		seen_text = False
+		added_space = False
+		for line in lines:
+			if line.strip() and not line.strip().startswith('{{'):
+				seen_text = True
+			if line.strip().startswith('{{') and seen_text and not added_space:
+				new_lines.extend(["", '<div class="mt-6"></div>', ""])
+				added_space = True
+			new_lines.append(line)
+		body = "\n".join(new_lines)
+		body_html = style_card_body_html(run_pandoc(body, hard_breaks=True))
+		out.append('  <div class="card-paragraph">')
 		out.extend(f"    {line}" if line.strip() else "" for line in body_html.splitlines())
 		out.append("  </div>")
 	out.append("</div>")

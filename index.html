@@ -8,7 +8,8 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The MP3 Paper | Home</title>
+  <title>Site Title | Home</title>
+  <link rel="icon" href="resource/favicon.ico" type="image/x-icon">
   <link href="dist/output.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,9 +18,10 @@
 <body class="bg-surface text-[#101012] font-main min-h-screen pt-12">
   <!-- Header - Mobile -->
   <header class="mobile-header">
-    <h1 class="title-text">The MP3 Paper</h1>
+    <h1 class="title-text">Site Title</h1>
     <ul class="mobile-points">
       <li><a class="sidebar-link" href="#so-you-think-you-know-mp3">So You Think You Know MP3...</a></li>
+      <li><a class="sidebar-link" href="#a-brief-history">A Brief History</a></li>
       <li><a class="sidebar-link" href="#demonstration">Demonstration</a></li>
       <li><a class="sidebar-link" href="#rest-of-the-paper">Rest of the Paper</a></li>
     </ul>
@@ -32,10 +34,11 @@
       <div class="sidebar-content flex flex-col h-full">
         <!-- Title and Notes -->
         <div>
-          <h1 class="title-text">The MP3 Paper</h1>
+          <h1 class="title-text">Site Title</h1>
           
           <div class="sidebar-points">
             <p>- <a class="sidebar-link" href="#so-you-think-you-know-mp3">So You Think You Know MP3...</a></p>
+            <p>- <a class="sidebar-link" href="#a-brief-history">A Brief History</a></p>
             <p>- <a class="sidebar-link" href="#demonstration">Demonstration</a></p>
             <p>- <a class="sidebar-link" href="#rest-of-the-paper">Rest of the Paper</a></p>
           </div>
@@ -50,37 +53,62 @@
 
     <!-- Main Content -->
     <main class="main-container">
-      <p class="text-paragraph"><em>“Small is the new big…. If we can make your audio and video files
-      smaller, we can make cancer smaller. And hunger. And AIDS.”</em></p>
-      <p class="text-paragraph"><em>- Gavin Belson, Silicon Valley</em></p>
-      <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Introduction
       </div>
       <h2 id="so-you-think-you-know-mp3" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">So You Think You Know MP3…</h2>
-      <p class="text-paragraph">Lossy compression… data discarded? Describe the mp3 format by
-      <em>decoding</em> the psychology that it employs? Are there a certain
-      group of people who we trust to define perceptibility? How has audio
-      compression affected and been affected by both the economy of
-      <em>data</em> and the economy of, well, money? As a supplement to my
-      paper, I plan to code a compression demo blown up step-by-step with
-      helpful visualizations.</p>
+      <p class="text-paragraph">In this paper, I aim to describe the mp3 format by decoding the
+      psychology that it employs. I’ll start with a brief history of audio
+      recording technologies and the practice of <em>audio coding</em>,
+      including the innovations behind <em>perceptual audio coding</em>. The
+      subsequent <a href="#demonstration">demonstration</a> section is an
+      interactive exhibition of three critical steps in the mp3 algorithm,
+      where you can upload an uncompressed (.wav) audio file and see the
+      perceptual coding in action.</p>
+      <p class="text-paragraph">The latter sections (order TBD) expand the scope of the paper to more
+      philosophical horizons, contemplating the <em>current</em> ideologies
+      surrounding lossy audio compression, as well as the speculative future
+      of coding paradigms (i.e. touching on AI-assisted compression).</p>
       <p class="text-paragraph">If you’re curious, here’s <a target="_blank" href="https://github.com/randomLevelup/mp3paper">the code</a>.</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Part One
       </div>
+      <h2 id="a-brief-history" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">A Brief History</h2>
+      <p class="text-paragraph">As we know, sound waves propagate through air and interfere
+      additively, such that every excitation of air from any source, no matter
+      its strength, contributes to a single perceived stream of sound which
+      is, “in short, a tumbled entanglement of the most different kinds of
+      motion, complicated beyond conception [2, p. 26].”</p>
+      <p class="text-paragraph">To be discussed:</p>
+      <ul class="bullet-list mt-4 mb-10 max-w-4xl">
+      <li>Hermann Helmholtz</li>
+      <li>Bell’s phonograph</li>
+      <li>Edison’s phonograph</li>
+      <li>Bray and Wever’s cat experiments</li>
+      <li>Emergence of perceptual analysis and coding techniques</li>
+      </ul>
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
+      <div class="eyebrow mb-3">
+      Part Two
+      </div>
       <h2 id="demonstration" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Demonstration</h2>
-      <p class="text-paragraph">As a supplement to my paper, I plan to code a compression demo blown
-      up step-by-step with helpful visualizations. I will include a bit of
-      tech history and a bit of psych history as well.</p>
+      <p class="text-paragraph">Helmholtz was correct in declaring the mechanisms of wave composition
+      <em>complicated</em>, though via the progression of his own work, and
+      the nearly two centuries of science that succeeded it, the qualifier
+      ‘beyond conception’ is proven hyperbole. In this section, I hope to
+      distill some of the wisdom attained in those years into an interactive
+      demo of the mp3 algorithm, blown up step-by-step with helpful
+      visualizations. The goal is to show the nature of the data that’s being
+      discarded, and the data that’s being kept around.</p>
 
       <div class="card">
         <p class="eyebrow">Step One</p>
         <h2 class="card-heading">Upload File</h2>
-        <div class="content-paragraph">
-          <p><p id="upload-status" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">No File Selected</p> <button id="btn-upload" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Upload
-          WAV</button> <button id="btn-example" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Use Example File</button></p>
+        <div class="card-paragraph">
+          <p><button id="btn-upload" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Upload WAV</button><br />
+          <button id="btn-example" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Use Example File</button><br />
+          <p id="upload-status" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">No File Selected</p></p>
         </div>
       </div>
 
@@ -90,67 +118,96 @@
       <div class="card">
         <p class="eyebrow">Step Two</p>
         <h2 class="card-heading">Adjust Bit Rate</h2>
-        <div class="content-paragraph">
-          <p><div class="mt-6 mb-1"><input type="range" id="bitrate" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div> <p id="bitrate-display" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">128 kbps</p></p>
+        <div class="card-paragraph">
+          <p><div class="mt-6 mb-1"><input type="range" id="bitrate" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div><br />
+          <p id="bitrate-display" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">128 kbps</p></p>
           <p><button id="btn-encode" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Encode</button></p>
         </div>
       </div>
 
       <div class="card">
         <p class="eyebrow">Algorithm: Polyphase Filtering</p>
-        <div class="content-paragraph">
-          <p><br />
-          We run the data through a custom filterbank to divide the audio signal
-          into 32 equal-width frequency subbands. The human ear has a limited
-          resolution that can be expressed in terms of critical bandwidths less
-          than 100Hz and more than 4kHz. Within a critical bandwidth the human ear
-          blurs frequencies. Thus the filter bank creates equal-width frequency
-          subbands that correlate to the critical bandwidths in a method
-          diagrammed in the following figure. For the visualization, I want to
-          show this subband split visually, but I also want to somehow incorporate
-          stats from the actual conversion, so that the visualization is unique to
-          the audio file.</p>
-          <p><button id="btn-polyphase" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button> <p id="info-polyphase" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for
-          Run…</p></p>
+        <div class="card-paragraph">
+          <p>We run the data through a custom filterbank to divide the audio
+          signal into 32 equal-width frequency subbands. For the visualization, We
+          show the subband split visually, alongside other stats from this step in
+          the encoding process.</p>
+          <div class="mt-6">
+
+          </div>
+          <p><button id="btn-polyphase" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p id="info-polyphase" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
       </div>
 
       <div class="card">
         <p class="eyebrow">Algorithm: Psychoacoustics Modeling</p>
-        <div class="content-paragraph">
-          <p><br />
-          Psychoacoustics has examined the concept of auditory masking and its
-          effect on compression. Within each (critical) subband where blurring
-          occurs the presence of a strong tonal signal can mask a region of weaker
-          signals. For this card, we want to somehow visualize some of the results
-          psychoacoustic analysis in a digestible way.</p>
-          <p><button id="btn-psycho" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button> <p id="info-psycho" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for
-          Run…</p></p>
+        <div class="card-paragraph">
+          <p><em>Masking</em> is a primarily neurological phenomenon wherein
+          “louder sounds hide, i.e., ‘mask’, softer sounds in their spectral or
+          temporal vicinity” [3]. That is to say, masking causes us to lose track
+          of the fainter sounds when a loud sound is introduced. Certain signals
+          are better maskers than others (white noise, for instance). As we’ll
+          cover, parts of the mp3 algorithm involve ‘replacing’ (for lack of a
+          better term) existing audio data with noise (random aperiodic signals).
+          This effect is essential for perceptual coding algorithms to work
+          properly.</p>
+          <p>Psychoacoustics has examined the concept of auditory masking and its
+          effect on compression. The human ear has ‘critical subbands’ where
+          masking occurs more conspicuously. This visualization will show some of
+          that subband analysis in a digestible way. In this step, each
+          visualization should be quite unique to the audio file that we’re
+          encoding.</p>
+          <div class="mt-6">
+
+          </div>
+          <p><button id="btn-psycho" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p id="info-psycho" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
       </div>
 
       <div class="card">
         <p class="eyebrow">Algorithm: Bit Allocation</p>
-        <div class="content-paragraph">
-          <p><br />
-          Through an iterative algorithm, the bit allocation uses information from
-          the psychoacoustic model to determine the number of code bits to be
-          allocated to each subband. This process can be described using the
-          following formula: MNRdB = SNRdB - SMRdB. For this visualization, we
-          want to build off the psychoacoustics results and show which bands are
-          getting more bits.</p>
-          <p><button id="btn-bitalloc" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button> <p id="info-bitalloc" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for
-          Run…</p></p>
+        <div class="card-paragraph">
+          <p>The bit allocation uses information from the psychoacoustic model to
+          determine the number of code bits to be allocated to each subband. This
+          process can be described using the following formula:
+          <code>MNRdB = SNRdB - SMRdB</code>. For this visualization, we want to
+          build off the psychoacoustics results and show which bands are getting
+          more bits.</p>
+          <div class="mt-6">
+
+          </div>
+          <p><button id="btn-bitalloc" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
+          <p id="info-bitalloc" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Algorithm: Result</p>
+        <div class="card-paragraph">
+          <p>Listen to the resulting mp3 file:</p>
+          <div class="mt-6">
+
+          </div>
+          <p><audio id="audio-result" src="" class="hidden w-full mt-4 mb-4" controls></audio></p>
         </div>
       </div>
 
       <p class="text-paragraph">And now we know…</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
-      Parts Two, Three etc.
+      Parts Three, Four etc.
       </div>
       <h2 id="rest-of-the-paper" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Rest of the Paper</h2>
       <p class="text-paragraph"><em>paper pending…</em></p>
+      <p class="text-paragraph">Subjects to discuss:</p>
+      <ul class="bullet-list mt-4 mb-10 max-w-4xl">
+      <li>Present condition of lossy audio compression</li>
+      <li>Economy of bitrate: bandwidth limitations in some regions,
+      popularity of streaming</li>
+      <li>Future speculation for mp3 (i.e. AI-assisted compression)</li>
+      </ul>
 
       <footer class="page-footer">
         <p class="text-xl font-semibold mb-6 text-primary">References:</p>
