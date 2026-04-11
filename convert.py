@@ -145,8 +145,8 @@ def style_card_body_html(html_text: str) -> str:
 		flags=re.DOTALL
 	)
 	html_text = re.sub(
-		r"\{\{hidden_image:(.*?):(.*?)\}\}",
-		r'<img id="\1" src="\2" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4">',
+		r"\{\{hidden_graph:(.*?)\}\}",
+		r'<div id="\1" class="hidden w-full h-[400px] rounded-lg border border-primary/20 mt-4 mb-4"></div>',
 		html_text,
 		flags=re.DOTALL
 	)

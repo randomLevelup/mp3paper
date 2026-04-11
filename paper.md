@@ -65,7 +65,7 @@ Now you may adjust the bit-rate. Its like a quality slider. Choose your bit rate
 
 We run the data through a custom filterbank to divide the audio signal into 32 equal-width frequency subbands. For the visualization, We show the subband split visually, alongside other stats from this step in the encoding process.
 
-{{hidden_image:img-polyphase:resource/card1.jpg}}
+{{hidden_graph:graph-polyphase}}
 {{hidden_button:btn-polyphase:Run}}
 {{info:info-polyphase:Waiting for Run...}}
 
@@ -78,7 +78,7 @@ We run the data through a custom filterbank to divide the audio signal into 32 e
 
 Psychoacoustics has examined the concept of auditory masking and its effect on compression. The human ear has 'critical subbands' where masking occurs more conspicuously. This visualization will show some of that subband analysis in a digestible way. In this step, each visualization should be quite unique to the audio file that we're encoding.
 
-{{hidden_image:img-psycho:resource/card2.jpg}}
+{{hidden_graph:graph-psycho}}
 {{hidden_button:btn-psycho:Run}}
 {{info:info-psycho:Waiting for Run...}}
 
@@ -89,7 +89,7 @@ Psychoacoustics has examined the concept of auditory masking and its effect on c
 
 The bit allocation uses information from the psychoacoustic model to determine the number of code bits to be allocated to each subband. This process can be described using the following formula: `MNRdB = SNRdB - SMRdB`. For this visualization, we want to build off the psychoacoustics results and show which bands are getting more bits.
 
-{{hidden_image:img-bitalloc:resource/card3.jpg}}
+{{hidden_graph:graph-bitalloc}}
 {{hidden_button:btn-bitalloc:Run}}
 {{info:info-bitalloc:Waiting for Run...}}
 

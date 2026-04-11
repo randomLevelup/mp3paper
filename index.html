@@ -14,7 +14,9 @@
   <link href="styles.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"></head>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <script src="node_modules/plotly.js-dist/plotly.js"></script>
+</head>
 <body class="bg-surface text-[#101012] font-main min-h-screen pt-12">
   <!-- Header - Mobile -->
   <header class="mobile-header">
@@ -140,7 +142,7 @@
           <div class="mt-6">
 
           </div>
-          <p><img id="img-polyphase" src="resource/card1.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <p><div id="graph-polyphase" class="hidden w-full h-[400px] rounded-lg border border-primary/20 mt-4 mb-4"></div><br />
           <button id="btn-polyphase" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-polyphase" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
@@ -166,7 +168,7 @@
           <div class="mt-6">
 
           </div>
-          <p><img id="img-psycho" src="resource/card2.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <p><div id="graph-psycho" class="hidden w-full h-[400px] rounded-lg border border-primary/20 mt-4 mb-4"></div><br />
           <button id="btn-psycho" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-psycho" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>
@@ -184,7 +186,7 @@
           <div class="mt-6">
 
           </div>
-          <p><img id="img-bitalloc" src="resource/card3.jpg" class="hidden w-full rounded-lg border border-primary/20 mt-4 mb-4"><br />
+          <p><div id="graph-bitalloc" class="hidden w-full h-[400px] rounded-lg border border-primary/20 mt-4 mb-4"></div><br />
           <button id="btn-bitalloc" class="hidden px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Run</button><br />
           <p id="info-bitalloc" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">Waiting for Run…</p></p>
         </div>

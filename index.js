@@ -97,15 +97,15 @@ async function loadMp3PaperWasm() {
       const btnBitalloc = document.getElementById('btn-bitalloc');
       const infoBitalloc = document.getElementById('info-bitalloc');
       const audioResult = document.getElementById('audio-result');
-      const imgPolyphase = document.getElementById('img-polyphase');
-      const imgPsycho = document.getElementById('img-psycho');
-      const imgBitalloc = document.getElementById('img-bitalloc');
+      const graphPolyphase = document.getElementById('graph-polyphase');
+      const graphPsycho = document.getElementById('graph-psycho');
+      const graphBitalloc = document.getElementById('graph-bitalloc');
       let resultAudioUrl = null;
 
       function clearRenderedAudio() {
-        if (imgPolyphase) imgPolyphase.classList.add('hidden');
-        if (imgPsycho) imgPsycho.classList.add('hidden');
-        if (imgBitalloc) imgBitalloc.classList.add('hidden');
+        if (graphPolyphase) graphPolyphase.classList.add('hidden');
+        if (graphPsycho) graphPsycho.classList.add('hidden');
+        if (graphBitalloc) graphBitalloc.classList.add('hidden');
         
         if (infoEncode) infoEncode.textContent = '';
         if (infoPolyphase) infoPolyphase.textContent = 'Waiting for Run...';
@@ -278,7 +278,10 @@ async function loadMp3PaperWasm() {
             if (infoPolyphase) {
               infoPolyphase.textContent = `Received polyphase data for ${data.length} frames.`;
             }
-            if (imgPolyphase) imgPolyphase.classList.remove('hidden');
+            if (graphPolyphase) {
+              graphPolyphase.classList.remove('hidden');
+              Plotly.newPlot(graphPolyphase, [], { title: 'Polyphase Filtering (Empty)' });
+            }
             if (btnPsycho) btnPsycho.classList.remove('hidden');
             console.log(`[mp3paper] polyphase:`, data);
           }, 'vii');
@@ -295,7 +298,10 @@ async function loadMp3PaperWasm() {
             if (infoPsycho) {
               infoPsycho.textContent = `Received psycho data for ${data.length} frames.`;
             }
-            if (imgPsycho) imgPsycho.classList.remove('hidden');
+            if (graphPsycho) {
+              graphPsycho.classList.remove('hidden');
+              Plotly.newPlot(graphPsycho, [], { title: 'Psychoacoustics Modeling (Empty)' });
+            }
             if (btnBitalloc) btnBitalloc.classList.remove('hidden');
             console.log(`[mp3paper] psycho:`, data);
           }, 'vii');
@@ -312,7 +318,10 @@ async function loadMp3PaperWasm() {
             if (infoBitalloc) {
               infoBitalloc.textContent = `Received bitalloc data for ${data.length} frames.`;
             }
-            if (imgBitalloc) imgBitalloc.classList.remove('hidden');
+            if (graphBitalloc) {
+              graphBitalloc.classList.remove('hidden');
+              Plotly.newPlot(graphBitalloc, [], { title: 'Bit Allocation (Empty)' });
+            }
             renderEncodedAudio();
             console.log(`[mp3paper] bitalloc:`, data);
           }, 'vii');
