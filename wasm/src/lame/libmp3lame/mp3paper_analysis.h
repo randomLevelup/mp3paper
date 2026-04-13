@@ -12,7 +12,6 @@ extern "C" {
 #endif
 
 void mp3paper_analysis_begin_frame(lame_internal_flags* gfc, int frame_index);
-int mp3paper_analysis_should_collect(const lame_internal_flags* gfc);
 
 void mp3paper_analysis_collect_polyphase(lame_internal_flags* gfc,
 										 int granule_index,

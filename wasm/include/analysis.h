@@ -10,18 +10,6 @@ extern "C" {
 #define MP3PAPER_SUBBAND_COUNT 32
 #define MP3PAPER_MAX_SFB 39
 
-typedef enum {
-	MP3PAPER_COLLECTION_ALL_FRAMES = 0,
-	MP3PAPER_COLLECTION_PERIODIC_INTERVAL = 1
-} mp3paper_frame_collection_mode_t;
-
-typedef struct {
-	int mode;
-	int frame_interval;
-	int start_frame_index;
-	int max_collected_frames;
-} mp3paper_frame_collection_config_t;
-
 typedef struct {
 	int frame_index;
 	int collected_index;
@@ -71,7 +59,6 @@ typedef struct {
 } mp3paper_analysis_callbacks_t;
 
 typedef struct mp3paper_analysis_context {
-	mp3paper_frame_collection_config_t config;
 	mp3paper_analysis_stats_t stats;
 	int sample_rate;
 	int channels;
@@ -89,7 +76,7 @@ struct lame_internal_flags;
 void mp3paper_analysis_context_init(mp3paper_analysis_context_t* ctx,
 									int sample_rate,
 									int channels,
-									const mp3paper_frame_collection_config_t* config,
+									void* reserved_config,
 									const mp3paper_analysis_callbacks_t* callbacks,
 									void* user_data);
 

@@ -65,16 +65,6 @@ void Mp3StateEngine::set_bitrate(int bitrate) {
     std::cout << "[WASM] Bitrate set to: " << bitrate << " kbps." << std::endl;
 }
 
-void Mp3StateEngine::set_collection_config(int mode, int interval, int start, int max_frames) {
-    collection_config_.mode = (mode == static_cast<int>(FrameCollectionMode::PERIODIC_INTERVAL))
-        ? FrameCollectionMode::PERIODIC_INTERVAL
-        : FrameCollectionMode::ALL_FRAMES;
-    collection_config_.frame_interval = interval > 0 ? interval : 1;
-    collection_config_.start_frame_index = start >= 0 ? start : 0;
-    collection_config_.max_collected_frames = max_frames >= 0 ? max_frames : 0;
-    std::cout << "[WASM] Collection config set: mode=" << mode << ", interval=" << interval << std::endl;
-}
-
 AnalysisFrameHeader Mp3StateEngine::convert_header(const mp3paper_analysis_frame_header_t& header) {
     AnalysisFrameHeader out{};
     out.frame_index = header.frame_index;
@@ -167,17 +157,8 @@ void Mp3StateEngine::encode(StepCallback cb) {
     mp3_data_.clear();
 
     analysis_data_ = EncodingAnalysisData{};
-    analysis_data_.sampling = collection_config_;
     analysis_data_.sample_rate = sample_rate_;
     analysis_data_.channels = channels_;
-
-    mp3paper_frame_collection_config_t native_config{};
-    native_config.mode = (collection_config_.mode == FrameCollectionMode::PERIODIC_INTERVAL)
-        ? MP3PAPER_COLLECTION_PERIODIC_INTERVAL
-        : MP3PAPER_COLLECTION_ALL_FRAMES;
-    native_config.frame_interval = collection_config_.frame_interval;
-    native_config.start_frame_index = collection_config_.start_frame_index;
-    native_config.max_collected_frames = collection_config_.max_collected_frames;
 
     mp3paper_analysis_callbacks_t callbacks{};
     callbacks.on_polyphase_record = &Mp3StateEngine::on_polyphase_record;
@@ -186,7 +167,7 @@ void Mp3StateEngine::encode(StepCallback cb) {
 
     mp3paper_analysis_context_t analysis_context{};
     mp3paper_analysis_context_init(&analysis_context, sample_rate_, channels_,
-                                   &native_config, &callbacks, this);
+                                   nullptr, &callbacks, this);
     mp3paper_analysis_attach(lame_ctx_, &analysis_context);
 
     constexpr int kPcmChunkSamples = 1152;

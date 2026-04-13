@@ -22,18 +22,6 @@
 inline constexpr int kMp3PaperSubbandCount = 32;
 inline constexpr int kMp3PaperMaxScaleFactorBands = 39;
 
-enum class FrameCollectionMode {
-    ALL_FRAMES = 0,
-    PERIODIC_INTERVAL,
-};
-
-struct FrameCollectionConfig {
-    FrameCollectionMode mode = FrameCollectionMode::ALL_FRAMES;
-    int frame_interval = 1;
-    int start_frame_index = 0;
-    int max_collected_frames = 0;
-};
-
 struct AnalysisFrameHeader {
     int frame_index = 0;
     int collected_index = 0;
@@ -77,7 +65,6 @@ struct AnalysisCollectionStats {
 };
 
 struct EncodingAnalysisData {
-    FrameCollectionConfig sampling{};
     int sample_rate = 0;
     int channels = 0;
     AnalysisCollectionStats stats{};
@@ -109,7 +96,6 @@ public:
     void init(int sample_rate, int channels);
     void load_data(const uint8_t* data, size_t size);
     void set_bitrate(int bitrate);
-    void set_collection_config(int mode, int interval, int start, int max_frames);
 
     void encode(StepCallback cb);
     void step_polyphase(StepCallback cb);
@@ -133,7 +119,6 @@ private:
     int bitrate_;
     std::vector<short> pcm_data_;
     std::vector<uint8_t> mp3_data_;
-    FrameCollectionConfig collection_config_{};
     EncodingAnalysisData analysis_data_{};
     lame_t lame_ctx_;
 };

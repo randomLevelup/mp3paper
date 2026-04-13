@@ -52,3 +52,5 @@ em++ -std=c++20 index.cpp engine.cpp $LAME_OBJ -o ../mp3paper.js \
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
     -s EXIT_RUNTIME=0 \
     -s ASSERTIONS=1
+
+rm lame/libmp3lame/*.o

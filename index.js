@@ -1,3 +1,5 @@
+import { createPlottingHelpers } from './plotting.js';
+
 const cardBorderQuery = window.matchMedia('(min-width: 1024px) and (pointer: fine)');
 const cardBorderDefault = 'rgba(15, 118, 110, 0.25)';
 let rafId = null;
@@ -102,12 +104,106 @@ async function loadMp3PaperWasm() {
       const graphBitalloc = document.getElementById('graph-bitalloc');
       let resultAudioUrl = null;
 
+      const MP3_STATE = {
+        IDLE: 0,
+        LAME_INITIALIZED: 1,
+        FILE_LOADED: 2,
+        ENCODING_STARTED: 3,
+        ENCODING_COMPLETE: 4,
+        POLYPHASE_COMPLETE: 5,
+        PSYCHO_COMPLETE: 6,
+        BITALLOC_COMPLETE: 7,
+        ERROR_STATE: 8,
+      };
+
+      const {
+        purgePlot,
+        renderPolyphasePlot,
+        renderPsychoPlot,
+        renderBitallocPlot,
+      } = createPlottingHelpers({
+        graphPolyphase,
+        graphPsycho,
+        graphBitalloc,
+      });
+
+      function cleanWasmMessage(payload) {
+        if (typeof payload !== 'string') {
+          return '';
+        }
+        return payload.replace(/^Error:\s*/i, '').trim();
+      }
+
+      function parseJsonPayload(payload) {
+        try {
+          return JSON.parse(payload);
+        } catch {
+          return null;
+        }
+      }
+
+      function getGuidanceMessage(stepKey, stateCode, payload) {
+        const cleaned = cleanWasmMessage(payload);
+        const normalized = cleaned.toLowerCase();
+
+        if (stepKey === 'encode') {
+          if (normalized.includes('no audio data loaded')) {
+            return 'No audio data loaded. Upload a WAV file first.';
+          }
+          if (stateCode === MP3_STATE.IDLE || stateCode === MP3_STATE.LAME_INITIALIZED) {
+            return 'No audio data loaded. Upload a WAV file first.';
+          }
+          return cleaned || 'Encoding failed. Upload a WAV file and try again.';
+        }
+
+        if (stepKey === 'polyphase') {
+          if (normalized.includes('encode not complete')) {
+            return 'Run Encode first, then run Polyphase.';
+          }
+          return cleaned || 'Polyphase is not ready yet. Complete Encode first.';
+        }
+
+        if (stepKey === 'psycho') {
+          if (normalized.includes('polyphase step not ready')) {
+            return 'Run Polyphase first, then run Psychoacoustics.';
+          }
+          return cleaned || 'Psychoacoustics is not ready yet. Complete Polyphase first.';
+        }
+
+        if (stepKey === 'bitalloc') {
+          if (normalized.includes('psycho step not ready')) {
+            return 'Run Psychoacoustics first, then run Bit Allocation.';
+          }
+          return cleaned || 'Bit Allocation is not ready yet. Complete Psychoacoustics first.';
+        }
+
+        return cleaned || 'Operation failed. Please try again.';
+      }
+
+      function runWasmStep({ stepKey, expectedState, invoke, onSuccess, onError }) {
+        const cbPtr = module.addFunction((stateCode, dataPtr) => {
+          const payload = dataPtr ? module.UTF8ToString(dataPtr) : '';
+          console.log(`[mp3paper] ${stepKey} callback state=${stateCode}`, payload);
+
+          if (stateCode === expectedState) {
+            onSuccess(payload, stateCode);
+            return;
+          }
+
+          const message = getGuidanceMessage(stepKey, stateCode, payload);
+          onError(message, stateCode, payload);
+        }, 'vii');
+
+        invoke(cbPtr);
+        module.removeFunction(cbPtr);
+      }
+
       function clearRenderedAudio() {
-        if (graphPolyphase) graphPolyphase.classList.add('hidden');
-        if (graphPsycho) graphPsycho.classList.add('hidden');
-        if (graphBitalloc) graphBitalloc.classList.add('hidden');
+        purgePlot(graphPolyphase);
+        purgePlot(graphPsycho);
+        purgePlot(graphBitalloc);
         
-        if (infoEncode) infoEncode.textContent = '';
+        if (infoEncode) infoEncode.textContent = 'Ready to encode once a WAV file is loaded.';
         if (infoPolyphase) infoPolyphase.textContent = 'Waiting for Run...';
         if (infoPsycho) infoPsycho.textContent = 'Waiting for Run...';
         if (infoBitalloc) infoBitalloc.textContent = 'Waiting for Run...';
@@ -241,12 +337,18 @@ async function loadMp3PaperWasm() {
       if (btnEncode) {
         btnEncode.addEventListener('click', () => {
           if (infoEncode) infoEncode.textContent = 'Encoding...';
-          const cbPtr = module.addFunction((stateCode, dataPtr) => {
-            const json = module.UTF8ToString(dataPtr);
-            console.log(`[mp3paper] encode callback state=${stateCode}`, json);
-            if (stateCode >= 2) {
-              if (infoEncode) infoEncode.textContent = 'Encoding start.... scroll down to proceed to the next steps.';
-              
+
+          runWasmStep({
+            stepKey: 'encode',
+            expectedState: MP3_STATE.ENCODING_COMPLETE,
+            invoke: (cbPtr) => {
+              module._mp3_encode(cbPtr);
+            },
+            onSuccess: () => {
+              if (infoEncode) {
+                infoEncode.textContent = 'Encoding complete. Scroll down to run the next steps.';
+              }
+
               if (btnPolyphase) {
                 if (!btnPolyphase.classList.contains('hidden')) {
                   btnPolyphase.textContent = 'Update';
@@ -256,77 +358,84 @@ async function loadMp3PaperWasm() {
               }
               if (btnPsycho && !btnPsycho.classList.contains('hidden')) btnPsycho.textContent = 'Update';
               if (btnBitalloc && !btnBitalloc.classList.contains('hidden')) btnBitalloc.textContent = 'Update';
-              
+
               if (audioResult && !audioResult.classList.contains('hidden')) {
                 renderEncodedAudio();
               }
-            }
-          }, 'vii');
-          
-          // Configure collection (mode: 1=Periodic, interval: 100)
-          module._mp3_set_collection_config(1, 100, 0, 10);
-          module._mp3_encode(cbPtr);
-          module.removeFunction(cbPtr);
+            },
+            onError: (message) => {
+              if (infoEncode) infoEncode.textContent = message;
+            },
+          });
         });
       }
 
       if (btnPolyphase) {
         btnPolyphase.addEventListener('click', () => {
-          const cbPtr = module.addFunction((stateCode, dataPtr) => {
-            const json = module.UTF8ToString(dataPtr);
-            const data = JSON.parse(json);
-            if (infoPolyphase) {
-              infoPolyphase.textContent = `Received polyphase data for ${data.length} frames.`;
-            }
-            if (graphPolyphase) {
-              graphPolyphase.classList.remove('hidden');
-              Plotly.newPlot(graphPolyphase, [], { title: 'Polyphase Filtering (Empty)' });
-            }
-            if (btnPsycho) btnPsycho.classList.remove('hidden');
-            console.log(`[mp3paper] polyphase:`, data);
-          }, 'vii');
-          module._mp3_step_polyphase(cbPtr);
-          module.removeFunction(cbPtr);
+          runWasmStep({
+            stepKey: 'polyphase',
+            expectedState: MP3_STATE.POLYPHASE_COMPLETE,
+            invoke: (cbPtr) => module._mp3_step_polyphase(cbPtr),
+            onSuccess: (payload) => {
+              const data = parseJsonPayload(payload);
+              if (!Array.isArray(data)) {
+                if (infoPolyphase) infoPolyphase.textContent = 'Polyphase returned invalid data. Try Encode again.';
+                return;
+              }
+              if (infoPolyphase) infoPolyphase.textContent = renderPolyphasePlot(data);
+              if (btnPsycho) btnPsycho.classList.remove('hidden');
+              console.log('[mp3paper] polyphase:', data);
+            },
+            onError: (message) => {
+              if (infoPolyphase) infoPolyphase.textContent = message;
+            },
+          });
         });
       }
 
       if (btnPsycho) {
         btnPsycho.addEventListener('click', () => {
-          const cbPtr = module.addFunction((stateCode, dataPtr) => {
-            const json = module.UTF8ToString(dataPtr);
-            const data = JSON.parse(json);
-            if (infoPsycho) {
-              infoPsycho.textContent = `Received psycho data for ${data.length} frames.`;
-            }
-            if (graphPsycho) {
-              graphPsycho.classList.remove('hidden');
-              Plotly.newPlot(graphPsycho, [], { title: 'Psychoacoustics Modeling (Empty)' });
-            }
-            if (btnBitalloc) btnBitalloc.classList.remove('hidden');
-            console.log(`[mp3paper] psycho:`, data);
-          }, 'vii');
-          module._mp3_step_psycho(cbPtr);
-          module.removeFunction(cbPtr);
+          runWasmStep({
+            stepKey: 'psycho',
+            expectedState: MP3_STATE.PSYCHO_COMPLETE,
+            invoke: (cbPtr) => module._mp3_step_psycho(cbPtr),
+            onSuccess: (payload) => {
+              const data = parseJsonPayload(payload);
+              if (!Array.isArray(data)) {
+                if (infoPsycho) infoPsycho.textContent = 'Psychoacoustics returned invalid data. Retry Polyphase first.';
+                return;
+              }
+              if (infoPsycho) infoPsycho.textContent = renderPsychoPlot(data);
+              if (btnBitalloc) btnBitalloc.classList.remove('hidden');
+              console.log('[mp3paper] psycho:', data);
+            },
+            onError: (message) => {
+              if (infoPsycho) infoPsycho.textContent = message;
+            },
+          });
         });
       }
 
       if (btnBitalloc) {
         btnBitalloc.addEventListener('click', () => {
-          const cbPtr = module.addFunction((stateCode, dataPtr) => {
-            const json = module.UTF8ToString(dataPtr);
-            const data = JSON.parse(json);
-            if (infoBitalloc) {
-              infoBitalloc.textContent = `Received bitalloc data for ${data.length} frames.`;
-            }
-            if (graphBitalloc) {
-              graphBitalloc.classList.remove('hidden');
-              Plotly.newPlot(graphBitalloc, [], { title: 'Bit Allocation (Empty)' });
-            }
-            renderEncodedAudio();
-            console.log(`[mp3paper] bitalloc:`, data);
-          }, 'vii');
-          module._mp3_step_bitalloc(cbPtr);
-          module.removeFunction(cbPtr);
+          runWasmStep({
+            stepKey: 'bitalloc',
+            expectedState: MP3_STATE.BITALLOC_COMPLETE,
+            invoke: (cbPtr) => module._mp3_step_bitalloc(cbPtr),
+            onSuccess: (payload) => {
+              const data = parseJsonPayload(payload);
+              if (!Array.isArray(data)) {
+                if (infoBitalloc) infoBitalloc.textContent = 'Bit Allocation returned invalid data. Retry Psychoacoustics first.';
+                return;
+              }
+              if (infoBitalloc) infoBitalloc.textContent = renderBitallocPlot(data);
+              renderEncodedAudio();
+              console.log('[mp3paper] bitalloc:', data);
+            },
+            onError: (message) => {
+              if (infoBitalloc) infoBitalloc.textContent = message;
+            },
+          });
         });
       }
 

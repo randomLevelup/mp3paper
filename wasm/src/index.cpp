@@ -29,11 +29,6 @@ void mp3_set_bitrate(int bitrate) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-void mp3_set_collection_config(int mode, int interval, int start, int max_frames) {
-    g_engine.set_collection_config(mode, interval, start, max_frames);
-}
-
-EMSCRIPTEN_KEEPALIVE
 void mp3_encode(StepCallback cb) {
     g_engine.encode(cb);
 }

@@ -5,43 +5,6 @@
 #include "encoder.h"
 #include "lame_global_flags.h"
 
-static int
-mp3paper_normalized_interval(int interval)
-{
-	return interval > 0 ? interval : 1;
-}
-
-static int
-mp3paper_should_collect_frame(const mp3paper_analysis_context_t* ctx, int frame_index)
-{
-	int start_index;
-	int interval;
-
-	if (ctx == NULL) {
-		return 0;
-	}
-
-	start_index = ctx->config.start_frame_index;
-	if (start_index < 0) {
-		start_index = 0;
-	}
-	if (frame_index < start_index) {
-		return 0;
-	}
-
-	if (ctx->config.max_collected_frames > 0
-		&& ctx->stats.total_frames_collected >= ctx->config.max_collected_frames) {
-		return 0;
-	}
-
-	if (ctx->config.mode == MP3PAPER_COLLECTION_PERIODIC_INTERVAL) {
-		interval = mp3paper_normalized_interval(ctx->config.frame_interval);
-		return ((frame_index - start_index) % interval) == 0;
-	}
-
-	return 1;
-}
-
 static mp3paper_analysis_frame_header_t
 mp3paper_make_header(const lame_internal_flags* gfc,
 					 const mp3paper_analysis_context_t* ctx,
@@ -69,25 +32,17 @@ void
 mp3paper_analysis_context_init(mp3paper_analysis_context_t* ctx,
 							   int sample_rate,
 							   int channels,
-							   const mp3paper_frame_collection_config_t* config,
+							   void* reserved_config,
 							   const mp3paper_analysis_callbacks_t* callbacks,
 							   void* user_data)
 {
+	(void)reserved_config;
+
 	if (ctx == NULL) {
 		return;
 	}
 
 	memset(ctx, 0, sizeof(*ctx));
-
-	if (config != NULL) {
-		ctx->config = *config;
-	}
-	else {
-		ctx->config.mode = MP3PAPER_COLLECTION_ALL_FRAMES;
-		ctx->config.frame_interval = 1;
-		ctx->config.start_frame_index = 0;
-		ctx->config.max_collected_frames = 0;
-	}
 
 	if (callbacks != NULL) {
 		ctx->callbacks = *callbacks;
@@ -140,21 +95,11 @@ mp3paper_analysis_begin_frame(lame_internal_flags* gfc, int frame_index)
 		ctx->current_time_seconds = 0.0f;
 	}
 
-	ctx->current_frame_collect = mp3paper_should_collect_frame(ctx, frame_index);
+	ctx->current_frame_collect = 1;
 	if (ctx->current_frame_collect) {
 		ctx->current_collected_index = ctx->stats.total_frames_collected;
 		ctx->stats.total_frames_collected++;
 	}
-	else {
-		ctx->current_collected_index = -1;
-	}
-}
-
-int
-mp3paper_analysis_should_collect(const lame_internal_flags* gfc)
-{
-	mp3paper_analysis_context_t* ctx = mp3paper_analysis_get(gfc);
-	return (ctx != NULL && ctx->current_frame_collect);
 }
 
 void
