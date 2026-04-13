@@ -18,11 +18,12 @@ typedef struct {
 	int block_type;
 	int band_count;
 	float time_seconds;
+	int sample_rate_hz;
 } mp3paper_analysis_frame_header_t;
 
 typedef struct {
 	mp3paper_analysis_frame_header_t header;
-	float subband_magnitudes[MP3PAPER_SUBBAND_COUNT];
+	float subband_energy[MP3PAPER_SUBBAND_COUNT];
 } mp3paper_polyphase_record_t;
 
 typedef struct {
@@ -85,7 +86,6 @@ void mp3paper_analysis_attach(struct lame_global_struct* gfp, mp3paper_analysis_
 mp3paper_analysis_context_t* mp3paper_analysis_get(const struct lame_internal_flags* gfc);
 
 void mp3paper_analysis_begin_frame(struct lame_internal_flags* gfc, int frame_index);
-int mp3paper_analysis_should_collect(const struct lame_internal_flags* gfc);
 
 #ifdef __cplusplus
 }

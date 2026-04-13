@@ -955,7 +955,7 @@ mdct_sub48(lame_internal_flags * gfc, const sample_t * w0, const sample_t * w1)
     for (ch = 0; ch < cfg->channels_out; ch++) {
         for (gr = 0; gr < cfg->mode_gr; gr++) {
             int     band;
-            FLOAT   polyphase_accum[MP3PAPER_SUBBAND_COUNT] = { 0 };
+            FLOAT   polyphase_energy[MP3PAPER_SUBBAND_COUNT] = { 0 };
             gr_info *const gi = &(gfc->l3_side.tt[gr][ch]);
             FLOAT  *mdct_enc = gi->xr;
             FLOAT  *samp = esv->sb_sample[ch][1 - gr][0];
@@ -973,16 +973,18 @@ mdct_sub48(lame_internal_flags * gfc, const sample_t * w0, const sample_t * w1)
                 }
 
                 for (band = 0; band < 32; ++band) {
-                    polyphase_accum[band] += fabs(samp[band - 64]);
-                    polyphase_accum[band] += fabs(samp[band - 32]);
+                    const FLOAT current_sample = samp[band - 64];
+                    const FLOAT next_sample = samp[band - 32];
+                    polyphase_energy[band] += current_sample * current_sample;
+                    polyphase_energy[band] += next_sample * next_sample;
                 }
             }
 
             for (band = 0; band < 32; ++band) {
-                polyphase_accum[band] *= 1.0f / 18.0f;
+                polyphase_energy[band] *= 1.0f / 18.0f;
             }
             mp3paper_analysis_collect_polyphase(gfc, gr, ch, gi->block_type,
-                                                polyphase_accum);
+                                                polyphase_energy);
 
             /*
              * Perform imdct of 18 previous subband samples

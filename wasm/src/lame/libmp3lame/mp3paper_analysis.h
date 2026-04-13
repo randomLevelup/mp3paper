@@ -17,7 +17,7 @@ void mp3paper_analysis_collect_polyphase(lame_internal_flags* gfc,
 										 int granule_index,
 										 int channel_index,
 										 int block_type,
-										 const float subband_magnitudes[MP3PAPER_SUBBAND_COUNT]);
+						 const float subband_energy[MP3PAPER_SUBBAND_COUNT]);
 
 void mp3paper_analysis_collect_psycho(lame_internal_flags* gfc,
 									  int granule_index,

@@ -30,11 +30,12 @@ struct AnalysisFrameHeader {
     int block_type = 0;
     int band_count = 0;
     float time_seconds = 0.0f;
+    int sample_rate_hz = 0;
 };
 
 struct PolyphaseFrameRecord {
     AnalysisFrameHeader header{};
-    float subband_magnitudes[kMp3PaperSubbandCount] = {};
+    float subband_energy[kMp3PaperSubbandCount] = {};
 };
 
 struct PsychoFrameRecord {

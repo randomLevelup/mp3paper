@@ -25,6 +25,7 @@ mp3paper_make_header(const lame_internal_flags* gfc,
 	header.block_type = block_type;
 	header.band_count = band_count;
 	header.time_seconds = ctx->current_time_seconds;
+	header.sample_rate_hz = ctx->sample_rate;
 	return header;
 }
 
@@ -107,7 +108,7 @@ mp3paper_analysis_collect_polyphase(lame_internal_flags* gfc,
 									int granule_index,
 									int channel_index,
 									int block_type,
-									const float subband_magnitudes[MP3PAPER_SUBBAND_COUNT])
+									const float subband_energy[MP3PAPER_SUBBAND_COUNT])
 {
 	mp3paper_polyphase_record_t record;
 	mp3paper_analysis_context_t* ctx = mp3paper_analysis_get(gfc);
@@ -119,7 +120,7 @@ mp3paper_analysis_collect_polyphase(lame_internal_flags* gfc,
 	memset(&record, 0, sizeof(record));
 	record.header = mp3paper_make_header(gfc, ctx, granule_index, channel_index, block_type,
 										 MP3PAPER_SUBBAND_COUNT);
-	memcpy(record.subband_magnitudes, subband_magnitudes, sizeof(record.subband_magnitudes));
+	memcpy(record.subband_energy, subband_energy, sizeof(record.subband_energy));
 
 	ctx->callbacks.on_polyphase_record(ctx->user_data, &record);
 	ctx->stats.polyphase_record_count++;

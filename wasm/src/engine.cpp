@@ -74,6 +74,7 @@ AnalysisFrameHeader Mp3StateEngine::convert_header(const mp3paper_analysis_frame
     out.block_type = header.block_type;
     out.band_count = header.band_count;
     out.time_seconds = header.time_seconds;
+    out.sample_rate_hz = header.sample_rate_hz;
     return out;
 }
 
@@ -85,7 +86,7 @@ void Mp3StateEngine::on_polyphase_record(void* user_data, const mp3paper_polypha
     auto* engine = static_cast<Mp3StateEngine*>(user_data);
     PolyphaseFrameRecord out{};
     out.header = convert_header(record->header);
-    std::memcpy(out.subband_magnitudes, record->subband_magnitudes, sizeof(out.subband_magnitudes));
+    std::memcpy(out.subband_energy, record->subband_energy, sizeof(out.subband_energy));
     engine->analysis_data_.polyphase_records.push_back(out);
 }
 
@@ -240,7 +241,8 @@ static std::string serialize_header(const AnalysisFrameHeader& h) {
            ",\"channel_index\":" + std::to_string(h.channel_index) +
            ",\"block_type\":" + std::to_string(h.block_type) +
            ",\"band_count\":" + std::to_string(h.band_count) +
-           ",\"time_seconds\":" + std::to_string(h.time_seconds);
+           ",\"time_seconds\":" + std::to_string(h.time_seconds) +
+           ",\"sample_rate_hz\":" + std::to_string(h.sample_rate_hz);
 }
 
 void Mp3StateEngine::step_polyphase(StepCallback cb) {
@@ -253,9 +255,9 @@ void Mp3StateEngine::step_polyphase(StepCallback cb) {
     std::string json = "[";
     for (size_t i = 0; i < analysis_data_.polyphase_records.size(); ++i) {
         const auto& rec = analysis_data_.polyphase_records[i];
-        json += "{" + serialize_header(rec.header) + ",\"subband_magnitudes\":[";
+        json += "{" + serialize_header(rec.header) + ",\"subband_energy\":[";
         for (int j = 0; j < kMp3PaperSubbandCount; ++j) {
-            json += std::to_string(rec.subband_magnitudes[j]);
+            json += std::to_string(rec.subband_energy[j]);
             if (j < kMp3PaperSubbandCount - 1) json += ",";
         }
         json += "]}";

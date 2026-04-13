@@ -219,28 +219,17 @@ export function createPlottingHelpers({
     return count ? total / count : null;
   }
 
-  function selectRepresentativeFrames(groupedFrames, maxFrames = 12) {
-    if (groupedFrames.length <= maxFrames) {
-      return groupedFrames;
+  function formatFrequency(valueHz) {
+    const hz = Number(valueHz) || 0;
+    if (hz >= 1000) {
+      return `${(hz / 1000).toFixed(hz >= 10000 ? 0 : 1)} kHz`;
     }
-
-    const lastIndex = groupedFrames.length - 1;
-    const sampledIndices = new Set();
-
-    for (let i = 0; i < maxFrames; i += 1) {
-      sampledIndices.add(Math.round((i * lastIndex) / (maxFrames - 1)));
-    }
-
-    return Array.from(sampledIndices)
-      .sort((a, b) => a - b)
-      .map((index) => groupedFrames[index]);
+    return `${Math.round(hz)} Hz`;
   }
 
-  function makeFrameColor(index, total) {
-    const ratio = total <= 1 ? 0.5 : index / (total - 1);
-    const hue = 176 - ratio * 42;
-    const lightness = 36 + ratio * 24;
-    return `hsl(${hue}, 72%, ${lightness}%)`;
+  function energyToDb(energy) {
+    const safeEnergy = Math.max(Number(energy) || 0, 1e-20);
+    return 10 * Math.log10(safeEnergy);
   }
 
   function getFiniteExtent(matrix) {
@@ -266,87 +255,46 @@ export function createPlottingHelpers({
 
   function renderPolyphasePlot(records) {
     const groupedFrames = groupRecordsByFrame(records);
-    const displayedFrames = selectRepresentativeFrames(groupedFrames, 10);
-    const subbandIndices = Array.from({ length: 32 }, (_, index) => index);
-    const traces = displayedFrames.map((group, index) => {
-      const magnitudes = averageSeries(group.records, 'subband_magnitudes', subbandIndices.length);
-      const customdata = subbandIndices.map(() => [group.frameIndex, group.timeSeconds]);
-
-      return {
-        type: 'scatter',
-        mode: 'lines+markers',
-        x: subbandIndices,
-        y: magnitudes,
-        name: `Frame ${group.frameIndex}`,
-        customdata,
-        line: {
-          width: 2.5,
-          color: makeFrameColor(index, displayedFrames.length),
-        },
-        marker: {
-          size: 5,
-          color: makeFrameColor(index, displayedFrames.length),
-        },
-        hovertemplate: 'Subband %{x}<br>Magnitude %{y:.4f}<br>Frame %{customdata[0]}<br>Time %{customdata[1]:.2f}s<extra></extra>',
-      };
-    });
-
-    const subtitle = `${describeSampling(groupedFrames)}${displayedFrames.length < groupedFrames.length ? ` Showing ${displayedFrames.length} representative frames.` : ''}`;
-    const layout = {
-      ...createPlotLayout('Polyphase Subband Profiles', subtitle),
-      xaxis: {
-        ...createAxis('Subband index'),
-        tickmode: 'linear',
-        dtick: 4,
-      },
-      yaxis: createAxis('Average subband magnitude'),
-    };
-
-    renderPlot(graphPolyphase, traces, layout);
-
-    return `Showing ${displayedFrames.length} sampled frame profile(s) across 32 subbands. ${displayedFrames.length < groupedFrames.length ? 'Representative frames are spaced across the full sampled range.' : ''}`;
-  }
-
-  function maskingMarginDb(energy, threshold) {
-    const safeEnergy = Math.max(Number(energy) || 0, 1e-12);
-    const safeThreshold = Math.max(Number(threshold) || 0, 1e-12);
-    return 10 * Math.log10(safeEnergy / safeThreshold);
-  }
-
-  function renderPsychoPlot(records) {
-    const groupedFrames = groupRecordsByFrame(records);
     const frameBands = groupedFrames.map((group) => ({
       ...group,
-      energySeries: averageSeries(group.records, 'band_energy', getMaxBandCount(group.records, 'band_energy')),
-      thresholdSeries: averageSeries(group.records, 'band_threshold', getMaxBandCount(group.records, 'band_threshold')),
+      energySeries: averageSeries(group.records, 'subband_energy', 32),
     }));
-    const maxBandCount = frameBands.reduce(
-      (maxBands, group) => Math.max(maxBands, group.energySeries.length, group.thresholdSeries.length),
-      0,
-    );
+    const sampleRateHz = Number(records?.[0]?.sample_rate_hz) || 0;
+    const subbandCount = 32;
+    const subbandWidthHz = sampleRateHz > 0 ? sampleRateHz / (subbandCount * 2) : 0;
     const xValues = frameBands.map((group) => Number(group.timeSeconds.toFixed(3)));
-    const yValues = Array.from({ length: maxBandCount }, (_, index) => index + 1);
+    const yValues = Array.from({ length: subbandCount }, (_, index) => index + 1);
     const zValues = [];
     const hoverText = [];
+    const tickvals = [];
+    const ticktext = [];
 
-    for (let bandIndex = 0; bandIndex < maxBandCount; bandIndex += 1) {
+    for (let bandIndex = 0; bandIndex < subbandCount; bandIndex += 1) {
       const row = [];
       const hoverRow = [];
+      const bandNumber = bandIndex + 1;
+      const lowHz = bandIndex * subbandWidthHz;
+      const highHz = (bandIndex + 1) * subbandWidthHz;
+      const centerHz = lowHz + subbandWidthHz / 2;
+
+      if (bandIndex % 4 === 0 || bandIndex === subbandCount - 1) {
+        tickvals.push(bandNumber);
+        ticktext.push(`${bandNumber} · ${formatFrequency(centerHz)}`);
+      }
 
       frameBands.forEach((group) => {
         const energy = group.energySeries[bandIndex];
-        const threshold = group.thresholdSeries[bandIndex];
 
-        if (!Number.isFinite(energy) || !Number.isFinite(threshold)) {
+        if (!Number.isFinite(energy)) {
           row.push(null);
-          hoverRow.push(`Band ${bandIndex + 1}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>No sample collected`);
+          hoverRow.push(`Subband ${bandNumber}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>No sample collected`);
           return;
         }
 
-        const margin = maskingMarginDb(energy, threshold);
-        row.push(margin);
+        const energyDb = energyToDb(energy);
+        row.push(energyDb);
         hoverRow.push(
-          `Band ${bandIndex + 1}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>Masking margin ${margin.toFixed(2)} dB<br>Energy ${energy.toExponential(2)}<br>Threshold ${threshold.toExponential(2)}`,
+          `Subband ${bandNumber}<br>Center ${formatFrequency(centerHz)}<br>Range ${formatFrequency(lowHz)}-${formatFrequency(highHz)}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>Energy ${energyDb.toFixed(2)} dB<br>Mean-square ${energy.toExponential(2)}`,
         );
       });
 
@@ -355,10 +303,16 @@ export function createPlottingHelpers({
     }
 
     const extent = getFiniteExtent(zValues);
+    const subtitle = `${describeSampling(groupedFrames)} Each row is one of the 32 equal-width polyphase subbands.${sampleRateHz > 0 ? ` Derived from a ${formatFrequency(sampleRateHz)} sample rate.` : ''}`;
     const layout = {
-      ...createPlotLayout('Psychoacoustic Masking Heatmap', describeSampling(groupedFrames)),
+      ...createPlotLayout('Polyphase Subband Energy Heatmap', subtitle),
       xaxis: createAxis('Time (seconds)'),
-      yaxis: createAxis('Critical band index'),
+      yaxis: {
+        ...createAxis('Subband index / center frequency'),
+        tickmode: 'array',
+        tickvals,
+        ticktext,
+      },
       showlegend: false,
     };
 
@@ -377,12 +331,136 @@ export function createPlottingHelpers({
         [1, '#b91c1c'],
       ],
       colorbar: {
-        title: 'Margin (dB)',
+        title: 'Energy (dB)',
       },
-      zmid: 0,
-      zmin: extent ? Math.min(extent.min, -24) : -24,
-      zmax: extent ? Math.max(extent.max, 24) : 24,
+      zmin: extent ? extent.min : -120,
+      zmax: extent ? extent.max : 0,
     }];
+
+    renderPlot(graphPolyphase, traces, layout);
+
+    return `Heatmap shows subband energy across ${groupedFrames.length} encoded frame(s). The y-axis pairs each subband number with its center frequency.`;
+  }
+
+  function maskingMarginDb(energy, threshold) {
+    const safeEnergy = Math.max(Number(energy) || 0, 1e-12);
+    const safeThreshold = Math.max(Number(threshold) || 0, 1e-12);
+    return 10 * Math.log10(safeEnergy / safeThreshold);
+  }
+
+  function renderPsychoPlot(records) {
+    const groupedFrames = groupRecordsByFrame(records);
+    const frameBands = groupedFrames.map((group) => {
+      const energyBandCount = getMaxBandCount(group.records, 'band_energy');
+      const thresholdBandCount = getMaxBandCount(group.records, 'band_threshold');
+      return {
+        ...group,
+        effectiveBandCount: Math.max(energyBandCount, thresholdBandCount),
+        energySeries: averageSeries(group.records, 'band_energy', energyBandCount),
+        thresholdSeries: averageSeries(group.records, 'band_threshold', thresholdBandCount),
+      };
+    });
+    const maxBandCount = frameBands.reduce(
+      (maxBands, group) => Math.max(maxBands, group.energySeries.length, group.thresholdSeries.length),
+      0,
+    );
+    const longBandLimit = 22;
+    const hasShortBlocks = frameBands.some((group) => group.effectiveBandCount > longBandLimit);
+    const xValues = frameBands.map((group) => Number(group.timeSeconds.toFixed(3)));
+    const yValues = Array.from({ length: maxBandCount }, (_, index) => index + 1);
+    const zValues = [];
+    const hoverText = [];
+    const bgZ = [];
+    const bgHoverText = [];
+
+    for (let bandIndex = 0; bandIndex < maxBandCount; bandIndex += 1) {
+      const row = [];
+      const hoverRow = [];
+      const bgRow = [];
+      const bgHoverRow = [];
+
+      frameBands.forEach((group) => {
+        if (bandIndex >= group.effectiveBandCount) {
+          row.push(null);
+          hoverRow.push('');
+          bgRow.push(1);
+          bgHoverRow.push(
+            `Band ${bandIndex + 1}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br><b>N/A — long block type</b><br>Long blocks use ${longBandLimit} critical bands.<br>Short/mixed blocks use up to ${maxBandCount}.`,
+          );
+          return;
+        }
+
+        bgRow.push(null);
+        bgHoverRow.push('');
+
+        const energy = group.energySeries[bandIndex];
+        const threshold = group.thresholdSeries[bandIndex];
+
+        if (!Number.isFinite(energy) || !Number.isFinite(threshold)) {
+          row.push(null);
+          hoverRow.push(`Band ${bandIndex + 1}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>No sample collected`);
+          return;
+        }
+
+        const margin = maskingMarginDb(energy, threshold);
+        row.push(margin);
+        hoverRow.push(
+          `Band ${bandIndex + 1}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>Masking margin ${margin.toFixed(2)} dB<br>Energy ${energy.toExponential(2)}<br>Threshold ${threshold.toExponential(2)}`,
+        );
+      });
+
+      zValues.push(row);
+      hoverText.push(hoverRow);
+      bgZ.push(bgRow);
+      bgHoverText.push(bgHoverRow);
+    }
+
+    const extent = getFiniteExtent(zValues);
+    const blockTypeNote = hasShortBlocks
+      ? ` Long-block frames produce ${longBandLimit} critical bands; short/mixed blocks expand to ${maxBandCount}. Gray cells mark bands that do not exist for a given block type.`
+      : '';
+    const layout = {
+      ...createPlotLayout('Psychoacoustic Masking Heatmap', `${describeSampling(groupedFrames)}${blockTypeNote}`),
+      xaxis: createAxis('Time (seconds)'),
+      yaxis: createAxis('Critical band index'),
+      showlegend: false,
+    };
+
+    const traces = [
+      {
+        type: 'heatmap',
+        x: xValues,
+        y: yValues,
+        z: bgZ,
+        text: bgHoverText,
+        hovertemplate: '%{text}<extra></extra>',
+        hoverongaps: false,
+        colorscale: [[0, '#ddd9d0'], [1, '#ddd9d0']],
+        showscale: false,
+      },
+      {
+        type: 'heatmap',
+        x: xValues,
+        y: yValues,
+        z: zValues,
+        text: hoverText,
+        hovertemplate: '%{text}<extra></extra>',
+        hoverongaps: false,
+        colorscale: [
+          [0, '#17324d'],
+          [0.35, '#0f766e'],
+          [0.5, '#f7f0d8'],
+          [0.75, '#f59e0b'],
+          [1, '#b91c1c'],
+        ],
+        colorbar: {
+          title: 'Margin (dB)',
+        },
+        zmid: 0,
+        zmin: extent ? Math.min(extent.min, -24) : -24,
+        zmax: extent ? Math.max(extent.max, 24) : 24,
+      },
+    ];
 
     renderPlot(graphPsycho, traces, layout);
 
