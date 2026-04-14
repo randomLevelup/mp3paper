@@ -102,6 +102,7 @@ async function loadMp3PaperWasm() {
       const graphPolyphase = document.getElementById('graph-polyphase');
       const graphPsycho = document.getElementById('graph-psycho');
       const graphBitalloc = document.getElementById('graph-bitalloc');
+      let psychoDataCache = null;
       let resultAudioUrl = null;
 
       const MP3_STATE = {
@@ -117,6 +118,7 @@ async function loadMp3PaperWasm() {
       };
 
       const {
+        setSourceDuration,
         purgePlot,
         renderPolyphasePlot,
         renderPsychoPlot,
@@ -199,6 +201,7 @@ async function loadMp3PaperWasm() {
       }
 
       function clearRenderedAudio() {
+        setSourceDuration(0);
         purgePlot(graphPolyphase);
         purgePlot(graphPsycho);
         purgePlot(graphBitalloc);
@@ -264,6 +267,7 @@ async function loadMp3PaperWasm() {
         clearRenderedAudio();
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const audioBuffer = await audioCtx.decodeAudioData(buffer);
+        setSourceDuration(audioBuffer.duration);
         
         const numChannels = audioBuffer.numberOfChannels;
         const length = audioBuffer.length;
@@ -405,6 +409,7 @@ async function loadMp3PaperWasm() {
                 if (infoPsycho) infoPsycho.textContent = 'Psychoacoustics returned invalid data. Retry Polyphase first.';
                 return;
               }
+              psychoDataCache = data;
               if (infoPsycho) infoPsycho.textContent = renderPsychoPlot(data);
               if (btnBitalloc) btnBitalloc.classList.remove('hidden');
               console.log('[mp3paper] psycho:', data);
@@ -428,7 +433,7 @@ async function loadMp3PaperWasm() {
                 if (infoBitalloc) infoBitalloc.textContent = 'Bit Allocation returned invalid data. Retry Psychoacoustics first.';
                 return;
               }
-              if (infoBitalloc) infoBitalloc.textContent = renderBitallocPlot(data);
+              if (infoBitalloc) infoBitalloc.textContent = renderBitallocPlot(data, psychoDataCache);
               renderEncodedAudio();
               console.log('[mp3paper] bitalloc:', data);
             },

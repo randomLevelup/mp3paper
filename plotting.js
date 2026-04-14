@@ -21,22 +21,47 @@ export function createPlottingHelpers({
   graphPsycho,
   graphBitalloc,
 }) {
+  const plotSansFont = "Inter, sans-serif";
+  let sourceDurationSeconds = 0;
+
+  function setSourceDuration(seconds) {
+    const value = Number(seconds);
+    sourceDurationSeconds = Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  function wrapText(str, max = 110) {
+    if (!str) return '';
+    const words = str.trim().split(/\s+/);
+    let lines = [];
+    let currentLine = '';
+    words.forEach(word => {
+      if (currentLine.length + word.length > max) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = currentLine ? currentLine + ' ' + word : word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines.join('<br>');
+  }
+
   function createPlotLayout(title, subtitle = '') {
     const annotations = [];
 
     if (subtitle) {
       annotations.push({
-        text: subtitle,
+        text: wrapText(subtitle),
         xref: 'paper',
         yref: 'paper',
-        x: 0,
-        y: 1.12,
-        xanchor: 'left',
+        x: 0.5,
+        y: 1.05,
+        xanchor: 'center',
         yanchor: 'bottom',
         showarrow: false,
-        align: 'left',
+        align: 'center',
         font: {
-          family: 'Inter, sans-serif',
+          family: plotSansFont,
           size: 12,
           color: plotPalette.muted,
         },
@@ -46,12 +71,13 @@ export function createPlottingHelpers({
     return {
       title: {
         text: title,
-        x: 0,
-        xanchor: 'left',
+        x: 0.5,
+        xref: 'paper',
+        xanchor: 'center',
         y: 0.98,
         yanchor: 'top',
         font: {
-          family: 'Inter, sans-serif',
+          family: plotSansFont,
           size: 20,
           color: plotPalette.ink,
         },
@@ -62,7 +88,7 @@ export function createPlottingHelpers({
       },
       paper_bgcolor: 'rgba(0, 0, 0, 0)',
       plot_bgcolor: 'rgba(255, 255, 255, 0.92)',
-      margin: { t: 122, r: 24, b: 94, l: 60 },
+      margin: { t: 84, r: 24, b: 94, l: 60 },
       hoverlabel: {
         bgcolor: '#fffdf8',
         bordercolor: 'rgba(20, 50, 59, 0.18)',
@@ -70,13 +96,6 @@ export function createPlottingHelpers({
           family: 'Inter, sans-serif',
           color: plotPalette.ink,
         },
-      },
-      legend: {
-        orientation: 'h',
-        yanchor: 'top',
-        y: -0.2,
-        xanchor: 'left',
-        x: 0,
       },
       annotations,
     };
@@ -118,19 +137,66 @@ export function createPlottingHelpers({
     graphElement.classList.add('hidden');
   }
 
-  function formatSeconds(value) {
-    return `${Number(value || 0).toFixed(2)}s`;
+  function formatSeconds(value, highResolution = false) {
+    const s = Number(value || 0);
+    const mm = Math.floor(s / 60);
+    const ss = Math.floor(s % 60);
+    if (highResolution) {
+      const tenth = Math.floor((s % 1) * 10);
+      return `${mm}:${ss.toString().padStart(2, '0')}.${tenth}`;
+    }
+    return `${mm}:${ss.toString().padStart(2, '0')}`;
   }
 
-  function describeSampling(groupedFrames) {
-    if (!groupedFrames.length) {
-      return 'No sampled frames available.';
+  function getTimeAxis(xValues) {
+    const maxTime = xValues.length > 0 ? Math.max(...xValues) : 0;
+    const tickCount = 10;
+    const upperBound = maxTime > 0 ? maxTime : 1;
+    const useHighResolutionLabels = upperBound < 20;
+
+    const tickvals = [];
+    const ticktext = [];
+    for (let i = 0; i < tickCount; i += 1) {
+      const ratio = tickCount > 1 ? i / (tickCount - 1) : 0;
+      const t = ratio * upperBound;
+      tickvals.push(Number(t.toFixed(3)));
+      ticktext.push(formatSeconds(t, useHighResolutionLabels));
     }
+    
+    return {
+      ...createAxis('Time (mm:ss)'),
+      tickmode: 'array',
+      tickvals,
+      ticktext,
+    };
+  }
 
-    const firstFrame = groupedFrames[0].frameIndex;
-    const lastFrame = groupedFrames[groupedFrames.length - 1].frameIndex;
+  function getFreqAxisTicks(bandCount, isLinear, sampleRateHz) {
+    const tickvals = [];
+    const ticktext = [];
+    const safeSampleRate = sampleRateHz > 0 ? sampleRateHz : 44100;
+    const nyquist = safeSampleRate / 2;
+    const zMax = 6 * Math.asinh(nyquist / 600);
 
-    return `Collecting every encoded frame. Frame span ${firstFrame}-${lastFrame}.`;
+    for (let i = 1; i <= bandCount; i += 1) {
+      if ((i - 1) % 4 === 0 || i === bandCount) {
+        tickvals.push(i);
+        let freqHz;
+        if (isLinear) {
+          freqHz = (i - 0.5) * (nyquist / bandCount);
+        } else {
+          const normalized = (i - 0.5) / bandCount;
+          freqHz = 600 * Math.sinh((normalized * zMax) / 6);
+        }
+        ticktext.push(formatFrequency(freqHz));
+      }
+    }
+    return {
+      ...createAxis('Center frequency (approx)'),
+      tickmode: 'array',
+      tickvals,
+      ticktext,
+    };
   }
 
   function groupRecordsByFrame(records) {
@@ -168,6 +234,33 @@ export function createPlottingHelpers({
         records: bucket.records,
       }))
       .sort((a, b) => a.frameIndex - b.frameIndex);
+  }
+
+  function stabilizeFrameTimes(groupedFrames) {
+    if (!groupedFrames.length) {
+      return groupedFrames;
+    }
+
+    const hasDuration = Number.isFinite(sourceDurationSeconds) && sourceDurationSeconds > 0;
+    if (!hasDuration) {
+      return groupedFrames;
+    }
+
+    const firstFrame = groupedFrames[0].frameIndex;
+    const lastFrame = groupedFrames[groupedFrames.length - 1].frameIndex;
+    const frameSpan = lastFrame - firstFrame;
+
+    if (frameSpan <= 0) {
+      return groupedFrames.map((group) => ({
+        ...group,
+        timeSeconds: 0,
+      }));
+    }
+
+    return groupedFrames.map((group) => ({
+      ...group,
+      timeSeconds: ((group.frameIndex - firstFrame) / frameSpan) * sourceDurationSeconds,
+    }));
   }
 
   function getMaxBandCount(records, key) {
@@ -254,7 +347,7 @@ export function createPlottingHelpers({
   }
 
   function renderPolyphasePlot(records) {
-    const groupedFrames = groupRecordsByFrame(records);
+    const groupedFrames = stabilizeFrameTimes(groupRecordsByFrame(records));
     const frameBands = groupedFrames.map((group) => ({
       ...group,
       energySeries: averageSeries(group.records, 'subband_energy', 32),
@@ -303,16 +396,11 @@ export function createPlottingHelpers({
     }
 
     const extent = getFiniteExtent(zValues);
-    const subtitle = `${describeSampling(groupedFrames)} Each row is one of the 32 equal-width polyphase subbands.${sampleRateHz > 0 ? ` Derived from a ${formatFrequency(sampleRateHz)} sample rate.` : ''}`;
+    const subtitle = `Each row represents one of the 32 equal-width polyphase subbands`;
     const layout = {
       ...createPlotLayout('Polyphase Subband Energy Heatmap', subtitle),
-      xaxis: createAxis('Time (seconds)'),
-      yaxis: {
-        ...createAxis('Subband index / center frequency'),
-        tickmode: 'array',
-        tickvals,
-        ticktext,
-      },
+      xaxis: getTimeAxis(xValues),
+      yaxis: getFreqAxisTicks(subbandCount, true, sampleRateHz),
       showlegend: false,
     };
 
@@ -330,16 +418,14 @@ export function createPlottingHelpers({
         [0.75, '#f59e0b'],
         [1, '#b91c1c'],
       ],
-      colorbar: {
-        title: 'Energy (dB)',
-      },
+      showscale: false,
       zmin: extent ? extent.min : -120,
       zmax: extent ? extent.max : 0,
     }];
 
     renderPlot(graphPolyphase, traces, layout);
 
-    return `Heatmap shows subband energy across ${groupedFrames.length} encoded frame(s). The y-axis pairs each subband number with its center frequency.`;
+    return `Heatmap shows energy across ${groupedFrames.length} encoded frame(s). The y-axis labels each subband with its corresponding frequency.`;
   }
 
   function maskingMarginDb(energy, threshold) {
@@ -349,7 +435,8 @@ export function createPlottingHelpers({
   }
 
   function renderPsychoPlot(records) {
-    const groupedFrames = groupRecordsByFrame(records);
+    const sampleRateHz = Number(records?.[0]?.sample_rate_hz) || 0;
+    const groupedFrames = stabilizeFrameTimes(groupRecordsByFrame(records));
     const frameBands = groupedFrames.map((group) => {
       const energyBandCount = getMaxBandCount(group.records, 'band_energy');
       const thresholdBandCount = getMaxBandCount(group.records, 'band_threshold');
@@ -417,12 +504,12 @@ export function createPlottingHelpers({
 
     const extent = getFiniteExtent(zValues);
     const blockTypeNote = hasShortBlocks
-      ? ` Long-block frames produce ${longBandLimit} critical bands; short/mixed blocks expand to ${maxBandCount}. Gray cells mark bands that do not exist for a given block type.`
+      ? ` Gray cells mark bands that do not exist above band ${longBandLimit}.`
       : '';
     const layout = {
-      ...createPlotLayout('Psychoacoustic Masking Heatmap', `${describeSampling(groupedFrames)}${blockTypeNote}`),
-      xaxis: createAxis('Time (seconds)'),
-      yaxis: createAxis('Critical band index'),
+      ...createPlotLayout('Psychoacoustic Masking Heatmap', `${blockTypeNote}`),
+      xaxis: getTimeAxis(xValues),
+      yaxis: getFreqAxisTicks(maxBandCount, false, sampleRateHz),
       showlegend: false,
     };
 
@@ -453,9 +540,7 @@ export function createPlottingHelpers({
           [0.75, '#f59e0b'],
           [1, '#b91c1c'],
         ],
-        colorbar: {
-          title: 'Margin (dB)',
-        },
+        showscale: false,
         zmid: 0,
         zmin: extent ? Math.min(extent.min, -24) : -24,
         zmax: extent ? Math.max(extent.max, 24) : 24,
@@ -464,173 +549,104 @@ export function createPlottingHelpers({
 
     renderPlot(graphPsycho, traces, layout);
 
-    return `Heatmap shows masking margin across ${groupedFrames.length} sampled frame(s). Positive values indicate bands that sit further above the masking threshold.`;
+    return `Heatmap shows masking margin across ${groupedFrames.length} sampled frame(s). Values closer to blue are more heavily masked.`;
   }
 
-  function renderBitallocPlot(records) {
-    const groupedFrames = groupRecordsByFrame(records);
-    const xValues = groupedFrames.map((group) => Number(group.timeSeconds.toFixed(3)));
-    const totalBits = groupedFrames.map((group) => averageField(group.records, 'total_bits'));
-    const mainDataBits = groupedFrames.map((group) => averageField(group.records, 'part2_3_length'));
-    const reservoirBits = groupedFrames.map((group) => averageField(group.records, 'reservoir_size'));
-    const targetBits = groupedFrames.map((group) => averageField(group.records, 'target_bits'));
-    const maxBandCount = getMaxBandCount(records, 'bits_per_band');
-    const bandIndices = Array.from({ length: maxBandCount }, (_, index) => index + 1);
-    const scaleFactorActivity = averageSeries(records, 'bits_per_band', maxBandCount).map((value) => value ?? 0);
-    const hasBandProxyData = scaleFactorActivity.some((value) => value > 0);
+  function renderBitallocPlot(records, psychoRecords = null) {
+    if (!psychoRecords) {
+      return 'Psychoacoustics data is missing.';
+    }
+    const sampleRateHz = Number(records?.[0]?.sample_rate_hz) || 0;
+
+    const groupedBits = stabilizeFrameTimes(groupRecordsByFrame(records));
+    const groupedPsycho = stabilizeFrameTimes(groupRecordsByFrame(psychoRecords));
+
+    const xValues = [];
+    const yValues = [];
+    const markerSizes = [];
+    const markerColors = [];
+    const hoverText = [];
+
+    const maxBandCount = Math.max(
+      getMaxBandCount(records, 'bits_per_band'),
+      getMaxBandCount(psychoRecords, 'band_energy')
+    );
+
+    let maxBits = 1;
+    groupedBits.forEach((bitGroup) => {
+      const bitSeries = averageSeries(bitGroup.records, 'bits_per_band', maxBandCount);
+      bitSeries.forEach(b => {
+        if (b > maxBits) maxBits = b;
+      });
+    });
+
+    for (let frameIdx = 0; frameIdx < Math.min(groupedBits.length, groupedPsycho.length); frameIdx++) {
+      const bitGroup = groupedBits[frameIdx];
+      const psychoGroup = groupedPsycho[frameIdx];
+
+      const bitSeries = averageSeries(bitGroup.records, 'bits_per_band', maxBandCount);
+      const energySeries = averageSeries(psychoGroup.records, 'band_energy', maxBandCount);
+
+      for (let bandIdx = 0; bandIdx < maxBandCount; bandIdx++) {
+        const bits = bitSeries[bandIdx] || 0;
+        const energy = energySeries[bandIdx] || 1e-12;
+
+        if (energy <= 1e-12 && bits <= 0) {
+          continue;
+        }
+
+        xValues.push(bitGroup.timeSeconds);
+        yValues.push(bandIdx + 1);
+        markerSizes.push(Math.pow(bits, 1.5)); // Exaggerate sizes to make heavy allocation stand out more
+        markerColors.push(energyToDb(energy));
+
+        hoverText.push(
+          `Band ${bandIdx + 1}<br>Time ${formatSeconds(bitGroup.timeSeconds)}<br>Bits Proxy: ${bits.toFixed(2)}<br>Energy: ${energyToDb(energy).toFixed(2)} dB`
+        );
+      }
+    }
 
     const traces = [
       {
         type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Target bits',
+        mode: 'markers',
         x: xValues,
-        y: targetBits,
-        line: { width: 2.5, color: plotPalette.amber },
-        marker: { size: 6, color: plotPalette.amber },
-        xaxis: 'x',
-        yaxis: 'y',
-        hovertemplate: 'Time %{x:.2f}s<br>Target bits %{y:.1f}<extra></extra>',
-      },
-      {
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Main data bits',
-        x: xValues,
-        y: mainDataBits,
-        line: { width: 2.5, color: plotPalette.teal },
-        marker: { size: 6, color: plotPalette.teal },
-        xaxis: 'x',
-        yaxis: 'y',
-        hovertemplate: 'Time %{x:.2f}s<br>Main data bits %{y:.1f}<extra></extra>',
-      },
-      {
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Reservoir size',
-        x: xValues,
-        y: reservoirBits,
-        line: { width: 2.5, color: plotPalette.navy },
-        marker: { size: 6, color: plotPalette.navy },
-        xaxis: 'x',
-        yaxis: 'y',
-        hovertemplate: 'Time %{x:.2f}s<br>Reservoir %{y:.1f}<extra></extra>',
-      },
-      {
-        type: 'scatter',
-        mode: 'lines',
-        name: 'Total bits',
-        x: xValues,
-        y: totalBits,
-        line: { width: 2, dash: 'dot', color: plotPalette.rose },
-        xaxis: 'x',
-        yaxis: 'y',
-        hovertemplate: 'Time %{x:.2f}s<br>Total bits %{y:.1f}<extra></extra>',
+        y: yValues,
+        marker: {
+          symbol: 'square',
+          size: markerSizes,
+          sizemode: 'area', // makes scaling proportional to area
+          sizeref: maxBits > 0 ? (1.5 * Math.pow(maxBits, 1.5)) / Math.pow(50, 1.5) : 1, // Max size 50px
+          sizemin: 1,
+          color: markerColors,
+          colorscale: [
+            [0, '#17324d'],
+            [0.35, '#0f766e'],
+            [0.5, '#f7f0d8'],
+            [0.75, '#f59e0b'],
+            [1, '#b91c1c'],
+          ],
+          showscale: false,
+          line: { width: 0 },
+        },
+        text: hoverText,
+        hovertemplate: '%{text}<extra></extra>',
       },
     ];
 
-    if (hasBandProxyData) {
-      traces.push({
-        type: 'bar',
-        name: 'Scale-factor activity',
-        x: bandIndices,
-        y: scaleFactorActivity,
-        marker: {
-          color: scaleFactorActivity,
-          colorscale: [
-            [0, '#d7f3ef'],
-            [0.55, '#0d9488'],
-            [1, '#115e59'],
-          ],
-          line: {
-            color: 'rgba(17, 94, 89, 0.25)',
-            width: 1,
-          },
-        },
-        xaxis: 'x2',
-        yaxis: 'y2',
-        hovertemplate: 'Band %{x}<br>Average scale-factor activity %{y:.2f}<extra></extra>',
-      });
-    }
-
-    const baseLayout = createPlotLayout(
-      'Bit Allocation Budget',
-      `${describeSampling(groupedFrames)} ${hasBandProxyData ? 'Lower panel shows scale-factor activity, which is a proxy rather than literal bits-per-band.' : 'Per-band proxy is empty for this sample set.'}`,
-    );
     const layout = {
-      ...baseLayout,
-      xaxis: {
-        ...createAxis('Time (seconds)'),
-        domain: [0, 1],
-        anchor: 'y',
-      },
-      yaxis: {
-        ...createAxis('Bits'),
-        domain: hasBandProxyData ? [0.44, 1] : [0, 1],
-        anchor: 'x',
-      },
-      xaxis2: {
-        ...createAxis('Scale-factor band index'),
-        domain: [0, 1],
-        anchor: 'y2',
-      },
-      yaxis2: {
-        ...createAxis('Average activity'),
-        domain: [0, 0.24],
-        anchor: 'x2',
-      },
-      annotations: [
-        ...(baseLayout.annotations || []),
-        hasBandProxyData
-          ? {
-              text: 'Per-frame bit budget',
-              xref: 'paper',
-              yref: 'paper',
-              x: 0,
-              y: 1.04,
-              showarrow: false,
-              font: { family: 'Inter, sans-serif', size: 12, color: plotPalette.muted },
-            }
-          : {
-              text: 'Per-frame bit budget',
-              xref: 'paper',
-              yref: 'paper',
-              x: 0,
-              y: 1.04,
-              showarrow: false,
-              font: { family: 'Inter, sans-serif', size: 12, color: plotPalette.muted },
-            },
-        hasBandProxyData
-          ? {
-              text: 'Per-band scale-factor activity proxy',
-              xref: 'paper',
-              yref: 'paper',
-              x: 0,
-              y: 0.31,
-              showarrow: false,
-              font: { family: 'Inter, sans-serif', size: 12, color: plotPalette.muted },
-            }
-          : {
-              text: 'Per-band proxy is empty. Collect quantizer or Huffman bits per band for a truer allocation view.',
-              xref: 'paper',
-              yref: 'paper',
-              x: 0,
-              y: 0.08,
-              showarrow: false,
-              align: 'left',
-              font: { family: 'Inter, sans-serif', size: 12, color: plotPalette.muted },
-            },
-      ],
+      ...createPlotLayout('Bit Allocation Spectrogram', 'Size correlates to bits/scale-factor proxy; color to energy.'),
+      xaxis: getTimeAxis(xValues),
+      yaxis: getFreqAxisTicks(maxBandCount, false, sampleRateHz),
+      showlegend: false,
     };
 
     renderPlot(graphBitalloc, traces, layout);
-
-    return hasBandProxyData
-      ? `Showing frame-level bit budget dynamics across ${groupedFrames.length} sampled frame(s), plus a lower-band activity proxy.`
-      : `Showing frame-level bit budget dynamics across ${groupedFrames.length} sampled frame(s). The current WASM data does not yet expose a meaningful per-band allocation trace.`;
+    return `Spectrogram showing bit allocations over ${groupedBits.length} frames.`;
   }
 
   return {
+    setSourceDuration,
     purgePlot,
     renderPolyphasePlot,
     renderPsychoPlot,
