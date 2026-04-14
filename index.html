@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <script src="node_modules/plotly.js-dist/plotly.js"></script>
+  <script src="https://cdn.plot.ly/plotly-3.4.0.min.js" charset="utf-8"></script>
 </head>
 <body class="bg-surface text-[#101012] font-main min-h-screen pt-12">
   <!-- Header - Mobile -->
@@ -196,11 +196,12 @@
           <div class="mt-6">
 
           </div>
-          <p><audio id="audio-result" src="" class="hidden w-full mt-4 mb-4" controls></audio></p>
+          <p><audio id="audio-result" src="" class="hidden w-full mt-4 mb-4" controls></audio><br />
+          <p id="info-outfilesize" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium"></p></p>
         </div>
       </div>
 
-      <p class="text-paragraph">And now you know. :)</p>
+      <p class="text-paragraph">Now try again with a different bitrate…</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Parts Three, Four etc.

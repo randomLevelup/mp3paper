@@ -98,10 +98,11 @@ The bit allocation uses information from the psychoacoustic model to determine t
 Listen to the resulting mp3 file:
 
 {{hidden_audio:audio-result:}}
+{{info:info-outfilesize}}
 
 """
 
-And now you know. :)
+Now try again with a different bitrate...
 
 ---
 

@@ -92,6 +92,7 @@ async function loadMp3PaperWasm() {
       const btnExample = document.getElementById('btn-example');
       const btnEncode = document.getElementById('btn-encode');
       const infoEncode = document.getElementById('info-encode');
+      const infoOutfilesize = document.getElementById('info-outfilesize');
       const btnPolyphase = document.getElementById('btn-polyphase');
       const infoPolyphase = document.getElementById('info-polyphase');
       const btnPsycho = document.getElementById('btn-psycho');
@@ -235,6 +236,10 @@ async function loadMp3PaperWasm() {
           btnBitalloc.textContent = 'Run';
         }
         
+        if (infoOutfilesize) {
+          infoOutfilesize.textContent = '';
+        }
+
         if (!audioResult) {
           return;
         }
@@ -261,6 +266,7 @@ async function loadMp3PaperWasm() {
         const ptr = module._mp3_get_result_data();
         if (!ptr || size <= 0) {
           console.warn('[mp3paper] encoded result buffer is empty.');
+          if (infoOutfilesize) infoOutfilesize.textContent = '';
           return;
         }
 
@@ -272,6 +278,11 @@ async function loadMp3PaperWasm() {
         resultAudioUrl = URL.createObjectURL(blob);
         audioResult.src = resultAudioUrl;
         audioResult.classList.remove('hidden');
+
+        if (infoOutfilesize) {
+          const kb = (size / 1024).toFixed(1);
+          infoOutfilesize.textContent = `File size: ${kb} KB`;
+        }
       }
 
       async function loadWavData(buffer, filename) {
@@ -352,6 +363,9 @@ async function loadMp3PaperWasm() {
       if (btnEncode) {
         btnEncode.addEventListener('click', () => {
           setButtonLoading(btnEncode, true, 'Encoding...');
+          if (infoEncode) {
+            infoEncode.textContent = '';
+          }
 
           runWasmStep({
             stepKey: 'encode',

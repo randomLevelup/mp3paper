@@ -133,8 +133,8 @@ def style_card_body_html(html_text: str) -> str:
 		flags=re.DOTALL
 	)
 	html_text = re.sub(
-		r"\{\{info:(.*?):(.*?)\}\}",
-		r'<p id="\1" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">\2</p>',
+		r"\{\{info:([^:]+?)(?::(.*?))?\}\}",
+		lambda m: f'<p id="{m.group(1)}" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">{m.group(2) or ""}</p>',
 		html_text,
 		flags=re.DOTALL
 	)

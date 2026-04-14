@@ -396,9 +396,9 @@ export function createPlottingHelpers({
     }
 
     const extent = getFiniteExtent(zValues);
-    const subtitle = `Each row represents one of the 32 equal-width polyphase subbands`;
+    const subtitle = `Each row represents one of 32 equal-width frequency bands`;
     const layout = {
-      ...createPlotLayout('Polyphase Subband Energy Heatmap', subtitle),
+      ...createPlotLayout('Subband Energy Spectrogram (Post-Filter)', subtitle),
       xaxis: getTimeAxis(xValues),
       yaxis: getFreqAxisTicks(subbandCount, true, sampleRateHz),
       showlegend: false,
@@ -507,7 +507,7 @@ export function createPlottingHelpers({
       ? ` Gray cells mark bands that do not exist above band ${longBandLimit}.`
       : '';
     const layout = {
-      ...createPlotLayout('Psychoacoustic Masking Heatmap', `${blockTypeNote}`),
+      ...createPlotLayout('Psychoacoustic Masking Spectrogram', `${blockTypeNote}`),
       xaxis: getTimeAxis(xValues),
       yaxis: getFreqAxisTicks(maxBandCount, false, sampleRateHz),
       showlegend: false,
@@ -635,7 +635,7 @@ export function createPlottingHelpers({
     ];
 
     const layout = {
-      ...createPlotLayout('Bit Allocation Spectrogram', 'Size correlates to bits/scale-factor proxy; color to energy.'),
+      ...createPlotLayout('Bit Allocation Map', 'Point size correlates to # allocated bits (thus fidelity) ; color corresponds to energy.'),
       xaxis: getTimeAxis(xValues),
       yaxis: getFreqAxisTicks(maxBandCount, false, sampleRateHz),
       showlegend: false,
