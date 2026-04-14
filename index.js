@@ -182,6 +182,18 @@ async function loadMp3PaperWasm() {
         return cleaned || 'Operation failed. Please try again.';
       }
 
+      function setButtonLoading(btn, isLoading, text) {
+        if (!btn) return;
+        if (isLoading) {
+          btn.disabled = true;
+          // SVG spinner via Tailwind's animate-spin
+          btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>${text}`;
+        } else {
+          btn.disabled = false;
+          btn.textContent = text;
+        }
+      }
+
       function runWasmStep({ stepKey, expectedState, invoke, onSuccess, onError }) {
         const cbPtr = module.addFunction((stateCode, dataPtr) => {
           const payload = dataPtr ? module.UTF8ToString(dataPtr) : '';
@@ -196,8 +208,12 @@ async function loadMp3PaperWasm() {
           onError(message, stateCode, payload);
         }, 'vii');
 
-        invoke(cbPtr);
-        module.removeFunction(cbPtr);
+        // Yield execution to the browser once so that any loading spinners can safely display
+        // before the heavy, synchronous WASM work blocks the main thread.
+        setTimeout(() => {
+          invoke(cbPtr);
+          module.removeFunction(cbPtr);
+        }, 16);
       }
 
       function clearRenderedAudio() {
@@ -205,11 +221,6 @@ async function loadMp3PaperWasm() {
         purgePlot(graphPolyphase);
         purgePlot(graphPsycho);
         purgePlot(graphBitalloc);
-        
-        if (infoEncode) infoEncode.textContent = 'Ready to encode once a WAV file is loaded.';
-        if (infoPolyphase) infoPolyphase.textContent = 'Waiting for Run...';
-        if (infoPsycho) infoPsycho.textContent = 'Waiting for Run...';
-        if (infoBitalloc) infoBitalloc.textContent = 'Waiting for Run...';
 
         if (btnPolyphase) {
           btnPolyphase.classList.add('hidden');
@@ -340,7 +351,7 @@ async function loadMp3PaperWasm() {
 
       if (btnEncode) {
         btnEncode.addEventListener('click', () => {
-          if (infoEncode) infoEncode.textContent = 'Encoding...';
+          setButtonLoading(btnEncode, true, 'Encoding...');
 
           runWasmStep({
             stepKey: 'encode',
@@ -349,6 +360,7 @@ async function loadMp3PaperWasm() {
               module._mp3_encode(cbPtr);
             },
             onSuccess: () => {
+              setButtonLoading(btnEncode, false, 'Update');
               if (infoEncode) {
                 infoEncode.textContent = 'Encoding complete. Scroll down to run the next steps.';
               }
@@ -368,7 +380,7 @@ async function loadMp3PaperWasm() {
               }
             },
             onError: (message) => {
-              if (infoEncode) infoEncode.textContent = message;
+              setButtonLoading(btnEncode, false, 'Update');
             },
           });
         });
@@ -376,22 +388,23 @@ async function loadMp3PaperWasm() {
 
       if (btnPolyphase) {
         btnPolyphase.addEventListener('click', () => {
+          setButtonLoading(btnPolyphase, true, 'Processing...');
           runWasmStep({
             stepKey: 'polyphase',
             expectedState: MP3_STATE.POLYPHASE_COMPLETE,
             invoke: (cbPtr) => module._mp3_step_polyphase(cbPtr),
             onSuccess: (payload) => {
+              setButtonLoading(btnPolyphase, false, 'Update');
               const data = parseJsonPayload(payload);
               if (!Array.isArray(data)) {
-                if (infoPolyphase) infoPolyphase.textContent = 'Polyphase returned invalid data. Try Encode again.';
                 return;
               }
-              if (infoPolyphase) infoPolyphase.textContent = renderPolyphasePlot(data);
+              renderPolyphasePlot(data);
               if (btnPsycho) btnPsycho.classList.remove('hidden');
               console.log('[mp3paper] polyphase:', data);
             },
             onError: (message) => {
-              if (infoPolyphase) infoPolyphase.textContent = message;
+              setButtonLoading(btnPolyphase, false, 'Update');
             },
           });
         });
@@ -399,23 +412,24 @@ async function loadMp3PaperWasm() {
 
       if (btnPsycho) {
         btnPsycho.addEventListener('click', () => {
+          setButtonLoading(btnPsycho, true, 'Processing...');
           runWasmStep({
             stepKey: 'psycho',
             expectedState: MP3_STATE.PSYCHO_COMPLETE,
             invoke: (cbPtr) => module._mp3_step_psycho(cbPtr),
             onSuccess: (payload) => {
+              setButtonLoading(btnPsycho, false, 'Update');
               const data = parseJsonPayload(payload);
               if (!Array.isArray(data)) {
-                if (infoPsycho) infoPsycho.textContent = 'Psychoacoustics returned invalid data. Retry Polyphase first.';
                 return;
               }
               psychoDataCache = data;
-              if (infoPsycho) infoPsycho.textContent = renderPsychoPlot(data);
+              renderPsychoPlot(data);
               if (btnBitalloc) btnBitalloc.classList.remove('hidden');
               console.log('[mp3paper] psycho:', data);
             },
             onError: (message) => {
-              if (infoPsycho) infoPsycho.textContent = message;
+              setButtonLoading(btnPsycho, false, 'Update');
             },
           });
         });
@@ -423,22 +437,23 @@ async function loadMp3PaperWasm() {
 
       if (btnBitalloc) {
         btnBitalloc.addEventListener('click', () => {
+          setButtonLoading(btnBitalloc, true, 'Processing...');
           runWasmStep({
             stepKey: 'bitalloc',
             expectedState: MP3_STATE.BITALLOC_COMPLETE,
             invoke: (cbPtr) => module._mp3_step_bitalloc(cbPtr),
             onSuccess: (payload) => {
+              setButtonLoading(btnBitalloc, false, 'Update');
               const data = parseJsonPayload(payload);
               if (!Array.isArray(data)) {
-                if (infoBitalloc) infoBitalloc.textContent = 'Bit Allocation returned invalid data. Retry Psychoacoustics first.';
                 return;
               }
-              if (infoBitalloc) infoBitalloc.textContent = renderBitallocPlot(data, psychoDataCache);
+              renderBitallocPlot(data, psychoDataCache);
               renderEncodedAudio();
               console.log('[mp3paper] bitalloc:', data);
             },
             onError: (message) => {
-              if (infoBitalloc) infoBitalloc.textContent = message;
+              setButtonLoading(btnBitalloc, false, 'Update');
             },
           });
         });

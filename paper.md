@@ -67,7 +67,6 @@ We run the data through a custom filterbank to divide the audio signal into 32 e
 
 {{hidden_graph:graph-polyphase}}
 {{hidden_button:btn-polyphase:Run}}
-{{info:info-polyphase:Waiting for Run...}}
 
 """
 
@@ -80,7 +79,6 @@ Psychoacoustics has examined the concept of auditory masking and its effect on c
 
 {{hidden_graph:graph-psycho}}
 {{hidden_button:btn-psycho:Run}}
-{{info:info-psycho:Waiting for Run...}}
 
 """
 
@@ -91,7 +89,6 @@ The bit allocation uses information from the psychoacoustic model to determine t
 
 {{hidden_graph:graph-bitalloc}}
 {{hidden_button:btn-bitalloc:Run}}
-{{info:info-bitalloc:Waiting for Run...}}
 
 """
 
