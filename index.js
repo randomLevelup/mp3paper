@@ -376,7 +376,7 @@ async function loadMp3PaperWasm() {
             onSuccess: () => {
               setButtonLoading(btnEncode, false, 'Update');
               if (infoEncode) {
-                infoEncode.textContent = 'Encoding complete. Scroll down to run the next steps.';
+                infoEncode.textContent = 'Encoding ready. Scroll down to run the next steps.';
               }
 
               if (btnPolyphase) {

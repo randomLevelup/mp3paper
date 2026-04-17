@@ -16,6 +16,20 @@ const plotPalette = {
   rose: '#be123c',
 };
 
+const energyColorscale = [
+  [0, '#17324d'],
+  [0.35, '#0f766e'],
+  [0.5, '#fde68a'],
+  [0.75, '#f59e0b'],
+  [1, '#b91c1c'],
+];
+
+const robustColorExtentDefaults = {
+  lowerPercentile: 0.05,
+  upperPercentile: 0.95,
+  padFraction: 0.08,
+};
+
 export function createPlottingHelpers({
   graphPolyphase,
   graphPsycho,
@@ -296,20 +310,31 @@ export function createPlottingHelpers({
     return sums.map((sum, index) => (counts[index] ? sum / counts[index] : null));
   }
 
-  function averageField(records, key) {
-    let total = 0;
-    let count = 0;
+  function buildFrameSeriesByKey(groupedFrames, key, length) {
+    return groupedFrames.map((group) => ({
+      frameIndex: group.frameIndex,
+      timeSeconds: Number(group.timeSeconds.toFixed(3)),
+      series: averageSeries(group.records, key, length),
+    }));
+  }
 
-    records.forEach((record) => {
-      const value = Number(record?.[key]);
-      if (!Number.isFinite(value)) {
-        return;
-      }
-      total += value;
-      count += 1;
-    });
+  function buildBitallocFrameSeries(groupedBits, groupedPsycho, maxBandCount) {
+    const frameCount = Math.min(groupedBits.length, groupedPsycho.length);
+    const out = [];
 
-    return count ? total / count : null;
+    for (let frameIdx = 0; frameIdx < frameCount; frameIdx += 1) {
+      const bitGroup = groupedBits[frameIdx];
+      const psychoGroup = groupedPsycho[frameIdx];
+
+      out.push({
+        frameIndex: bitGroup.frameIndex,
+        timeSeconds: Number(bitGroup.timeSeconds.toFixed(3)),
+        bitsSeries: averageSeries(bitGroup.records, 'bits_per_band', maxBandCount),
+        energySeries: averageSeries(psychoGroup.records, 'band_energy', maxBandCount),
+      });
+    }
+
+    return out;
   }
 
   function formatFrequency(valueHz) {
@@ -346,29 +371,90 @@ export function createPlottingHelpers({
     return { min, max };
   }
 
+  function getSortedFiniteValues(values) {
+    return values
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => a - b);
+  }
+
+  function getPercentileFromSorted(sortedValues, percentile) {
+    if (!sortedValues.length) {
+      return null;
+    }
+    const p = Math.min(Math.max(percentile, 0), 1);
+    const pos = (sortedValues.length - 1) * p;
+    const lower = Math.floor(pos);
+    const upper = Math.ceil(pos);
+    if (lower === upper) {
+      return sortedValues[lower];
+    }
+    const weight = pos - lower;
+    return sortedValues[lower] * (1 - weight) + sortedValues[upper] * weight;
+  }
+
+  function getRobustExtent(values, options = {}) {
+    const {
+      lowerPercentile = 0.05,
+      upperPercentile = 0.95,
+      minSpan = 18,
+      padFraction = 0.08,
+      fallbackMin = -120,
+      fallbackMax = 0,
+    } = options;
+
+    const sorted = getSortedFiniteValues(values);
+    if (!sorted.length) {
+      return { min: fallbackMin, max: fallbackMax };
+    }
+
+    const lowQ = getPercentileFromSorted(sorted, lowerPercentile);
+    const highQ = getPercentileFromSorted(sorted, upperPercentile);
+    if (!Number.isFinite(lowQ) || !Number.isFinite(highQ)) {
+      return { min: fallbackMin, max: fallbackMax };
+    }
+
+    const rawSpan = Math.max(highQ - lowQ, 0);
+    const pad = rawSpan > 0 ? rawSpan * padFraction : minSpan * 0.5;
+    let min = lowQ - pad;
+    let max = highQ + pad;
+
+    if (max - min < minSpan) {
+      const center = (max + min) / 2;
+      min = center - minSpan / 2;
+      max = center + minSpan / 2;
+    }
+
+    return { min, max };
+  }
+
+  function flattenFiniteMatrix(matrix) {
+    const out = [];
+    matrix.forEach((row) => {
+      row.forEach((value) => {
+        if (Number.isFinite(value)) {
+          out.push(value);
+        }
+      });
+    });
+    return out;
+  }
+
   function renderPolyphasePlot(records) {
     const groupedFrames = stabilizeFrameTimes(groupRecordsByFrame(records));
-    const frameBands = groupedFrames.map((group) => ({
-      ...group,
-      energySeries: averageSeries(group.records, 'subband_energy', 32),
-    }));
+    const frameBands = buildFrameSeriesByKey(groupedFrames, 'subband_energy', 32);
     const sampleRateHz = Number(records?.[0]?.sample_rate_hz) || 0;
     const subbandCount = 32;
     const subbandWidthHz = sampleRateHz > 0 ? sampleRateHz / (subbandCount * 2) : 0;
     const xValues = frameBands.map((group) => Number(group.timeSeconds.toFixed(3)));
     const yValues = Array.from({ length: subbandCount }, (_, index) => index + 1);
     const zValues = [];
-    const hoverText = [];
     const tickvals = [];
     const ticktext = [];
 
     for (let bandIndex = 0; bandIndex < subbandCount; bandIndex += 1) {
       const row = [];
-      const hoverRow = [];
       const bandNumber = bandIndex + 1;
-      const lowHz = bandIndex * subbandWidthHz;
-      const highHz = (bandIndex + 1) * subbandWidthHz;
-      const centerHz = lowHz + subbandWidthHz / 2;
+      const centerHz = (bandIndex + 0.5) * subbandWidthHz;
 
       if (bandIndex % 4 === 0 || bandIndex === subbandCount - 1) {
         tickvals.push(bandNumber);
@@ -376,29 +462,29 @@ export function createPlottingHelpers({
       }
 
       frameBands.forEach((group) => {
-        const energy = group.energySeries[bandIndex];
+        const energy = group.series[bandIndex];
 
         if (!Number.isFinite(energy)) {
           row.push(null);
-          hoverRow.push(`Subband ${bandNumber}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>No sample collected`);
           return;
         }
 
         const energyDb = energyToDb(energy);
         row.push(energyDb);
-        hoverRow.push(
-          `Subband ${bandNumber}<br>Center ${formatFrequency(centerHz)}<br>Range ${formatFrequency(lowHz)}-${formatFrequency(highHz)}<br>Frame ${group.frameIndex}<br>Time ${formatSeconds(group.timeSeconds)}<br>Energy ${energyDb.toFixed(2)} dB<br>Mean-square ${energy.toExponential(2)}`,
-        );
       });
 
       zValues.push(row);
-      hoverText.push(hoverRow);
     }
 
-    const extent = getFiniteExtent(zValues);
+    const extent = getRobustExtent(flattenFiniteMatrix(zValues), {
+      ...robustColorExtentDefaults,
+      minSpan: 14,
+      fallbackMin: -120,
+      fallbackMax: 0,
+    });
     const subtitle = `Each row represents one of 32 equal-width frequency bands`;
     const layout = {
-      ...createPlotLayout('Subband Energy Spectrogram (Post-Filter)', subtitle),
+      ...createPlotLayout('Subband Energy Spec (Post-Filterbank)', subtitle),
       xaxis: getTimeAxis(xValues),
       yaxis: getFreqAxisTicks(subbandCount, true, sampleRateHz),
       showlegend: false,
@@ -409,18 +495,11 @@ export function createPlottingHelpers({
       x: xValues,
       y: yValues,
       z: zValues,
-      text: hoverText,
-      hovertemplate: '%{text}<extra></extra>',
-      colorscale: [
-        [0, '#17324d'],
-        [0.35, '#0f766e'],
-        [0.5, '#f7f0d8'],
-        [0.75, '#f59e0b'],
-        [1, '#b91c1c'],
-      ],
+      hovertemplate: 'Subband %{y}<br>Time %{x:.3f}s<br>Energy %{z:.2f} dB<extra></extra>',
+      colorscale: energyColorscale,
       showscale: false,
-      zmin: extent ? extent.min : -120,
-      zmax: extent ? extent.max : 0,
+      zmin: extent.min,
+      zmax: extent.max,
     }];
 
     renderPlot(graphPolyphase, traces, layout);
@@ -504,7 +583,7 @@ export function createPlottingHelpers({
 
     const extent = getFiniteExtent(zValues);
     const blockTypeNote = hasShortBlocks
-      ? ` Gray cells mark bands that do not exist above band ${longBandLimit}.`
+      ? `Teal cells are more heavily masked, while orange cells are kept closer to their original signal.`
       : '';
     const layout = {
       ...createPlotLayout('Psychoacoustic Masking Spectrogram', `${blockTypeNote}`),
@@ -533,13 +612,7 @@ export function createPlottingHelpers({
         text: hoverText,
         hovertemplate: '%{text}<extra></extra>',
         hoverongaps: false,
-        colorscale: [
-          [0, '#17324d'],
-          [0.35, '#0f766e'],
-          [0.5, '#f7f0d8'],
-          [0.75, '#f59e0b'],
-          [1, '#b91c1c'],
-        ],
+        colorscale: energyColorscale,
         showscale: false,
         zmid: 0,
         zmin: extent ? Math.min(extent.min, -24) : -24,
@@ -565,72 +638,73 @@ export function createPlottingHelpers({
     const yValues = [];
     const markerSizes = [];
     const markerColors = [];
-    const hoverText = [];
+    const customData = [];
 
     const maxBandCount = Math.max(
       getMaxBandCount(records, 'bits_per_band'),
       getMaxBandCount(psychoRecords, 'band_energy')
     );
 
+    const frameSeries = buildBitallocFrameSeries(groupedBits, groupedPsycho, maxBandCount);
     let maxBits = 1;
-    groupedBits.forEach((bitGroup) => {
-      const bitSeries = averageSeries(bitGroup.records, 'bits_per_band', maxBandCount);
-      bitSeries.forEach(b => {
-        if (b > maxBits) maxBits = b;
-      });
-    });
 
-    for (let frameIdx = 0; frameIdx < Math.min(groupedBits.length, groupedPsycho.length); frameIdx++) {
-      const bitGroup = groupedBits[frameIdx];
-      const psychoGroup = groupedPsycho[frameIdx];
+    frameSeries.forEach((frame) => {
+      const timeLabel = formatSeconds(frame.timeSeconds);
 
-      const bitSeries = averageSeries(bitGroup.records, 'bits_per_band', maxBandCount);
-      const energySeries = averageSeries(psychoGroup.records, 'band_energy', maxBandCount);
-
-      for (let bandIdx = 0; bandIdx < maxBandCount; bandIdx++) {
-        const bits = bitSeries[bandIdx] || 0;
-        const energy = energySeries[bandIdx] || 1e-12;
+      for (let bandIdx = 0; bandIdx < maxBandCount; bandIdx += 1) {
+        const bits = frame.bitsSeries[bandIdx] || 0;
+        const energy = frame.energySeries[bandIdx] || 1e-12;
 
         if (energy <= 1e-12 && bits <= 0) {
           continue;
         }
 
-        xValues.push(bitGroup.timeSeconds);
-        yValues.push(bandIdx + 1);
-        markerSizes.push(Math.pow(bits, 1.5)); // Exaggerate sizes to make heavy allocation stand out more
-        markerColors.push(energyToDb(energy));
+        const energyDb = energyToDb(energy);
+        const sizedBits = Math.pow(bits, 1.5);
 
-        hoverText.push(
-          `Band ${bandIdx + 1}<br>Time ${formatSeconds(bitGroup.timeSeconds)}<br>Bits Proxy: ${bits.toFixed(2)}<br>Energy: ${energyToDb(energy).toFixed(2)} dB`
-        );
+        if (bits > maxBits) {
+          maxBits = bits;
+        }
+
+        xValues.push(frame.timeSeconds);
+        yValues.push(bandIdx + 1);
+        markerSizes.push(sizedBits);
+        markerColors.push(energyDb);
+        customData.push([bits, timeLabel]);
       }
-    }
+    });
+
+    const sizeRefDenominator = Math.pow(50, 1.5);
+    const sizeRef = maxBits > 0 ? (1.5 * Math.pow(maxBits, 1.5)) / sizeRefDenominator : 1;
+
+    const colorExtent = getRobustExtent(markerColors, {
+      ...robustColorExtentDefaults,
+      minSpan: 12,
+      fallbackMin: -120,
+      fallbackMax: 0,
+    });
 
     const traces = [
       {
-        type: 'scatter',
+        type: 'scattergl',
         mode: 'markers',
         x: xValues,
         y: yValues,
         marker: {
           symbol: 'square',
           size: markerSizes,
-          sizemode: 'area', // makes scaling proportional to area
-          sizeref: maxBits > 0 ? (1.5 * Math.pow(maxBits, 1.5)) / Math.pow(50, 1.5) : 1, // Max size 50px
+          sizemode: 'area',
+          sizeref: sizeRef,
           sizemin: 1,
           color: markerColors,
-          colorscale: [
-            [0, '#17324d'],
-            [0.35, '#0f766e'],
-            [0.5, '#f7f0d8'],
-            [0.75, '#f59e0b'],
-            [1, '#b91c1c'],
-          ],
+          colorscale: energyColorscale,
+          cmin: colorExtent.min,
+          cmax: colorExtent.max,
           showscale: false,
           line: { width: 0 },
         },
-        text: hoverText,
-        hovertemplate: '%{text}<extra></extra>',
+        customdata: customData,
+        hovertemplate: 'Band %{y}<br>Time %{customdata[1]}<br>Bits Proxy %{customdata[0]:.2f}<br>Energy %{marker.color:.2f} dB<extra></extra>',
       },
     ];
 

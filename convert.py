@@ -233,7 +233,8 @@ def render_card(markdown_block: str) -> str:
 	if label:
 		out.append(f'  <p class="eyebrow">{html.escape(label)}</p>')
 	if title:
-		out.append(f'  <h2 class="card-heading">{html.escape(title)}</h2>')
+		head_id = slugify(title)
+		out.append(f'  <h2 id="{head_id}" class="card-heading">{html.escape(title)}</h2>')
 	if body:
 		lines = body.splitlines()
 		new_lines = []

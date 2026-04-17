@@ -23,8 +23,9 @@
     <h1 class="title-text">The MP3 Paper</h1>
     <ul class="mobile-points">
       <li><a class="sidebar-link" href="#so-you-think-you-know-mp3">So You Think You Know MP3...</a></li>
+      <li><a class="sidebar-link" href="#whered-my-data-go">Where&#x27;d My Data Go?</a></li>
+      <li><a class="sidebar-link" href="#encode-a-file">Encode A File</a></li>
       <li><a class="sidebar-link" href="#a-brief-history">A Brief History</a></li>
-      <li><a class="sidebar-link" href="#demonstration">Demonstration</a></li>
       <li><a class="sidebar-link" href="#rest-of-the-paper">Rest of the Paper</a></li>
     </ul>
   </header>
@@ -40,8 +41,9 @@
           
           <div class="sidebar-points">
             <p>- <a class="sidebar-link" href="#so-you-think-you-know-mp3">So You Think You Know MP3...</a></p>
+            <p>- <a class="sidebar-link" href="#whered-my-data-go">Where&#x27;d My Data Go?</a></p>
+            <p>- <a class="sidebar-link" href="#encode-a-file">Encode A File</a></p>
             <p>- <a class="sidebar-link" href="#a-brief-history">A Brief History</a></p>
-            <p>- <a class="sidebar-link" href="#demonstration">Demonstration</a></p>
             <p>- <a class="sidebar-link" href="#rest-of-the-paper">Rest of the Paper</a></p>
           </div>
         </div>
@@ -55,62 +57,107 @@
 
     <!-- Main Content -->
     <main class="main-container">
-      <p class="text-paragraph"><em>Note: This first draft is more of an outline. Most of my writing
-      so far has been code, thus the demo is mostly up and running but the
-      rest is yet to come.</em></p>
+      <p class="text-paragraph"><em>“Small is the new big…</em></p>
+      <p class="text-paragraph"><em>If we can make your audio and video files smaller, we can make
+      cancer smaller. And hunger. And AIDS.”</em></p>
+      <p class="text-paragraph">- <em>Gavin Belson, Silicon Valley</em></p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Introduction
       </div>
       <h2 id="so-you-think-you-know-mp3" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">So You Think You Know MP3…</h2>
-      <p class="text-paragraph">In this paper, I aim to describe the mp3 format by decoding the
-      psychology that it employs. I’ll start with a brief history of audio
-      recording technologies and the practice of <em>audio coding</em>,
-      including the innovations behind <em>perceptual audio coding</em>. The
-      subsequent <a href="#demonstration">demonstration</a> section is an
-      interactive exhibition of three critical steps in the mp3 algorithm,
-      where you can upload an uncompressed (.wav) audio file and see the
-      perceptual coding in action.</p>
-      <p class="text-paragraph">The latter sections (order TBD) expand the scope of the paper to more
+      <p class="text-paragraph">The mp3 format is one of those technologies that became so ordinary
+      that it tends to slip beneath our notice because it works so well. For
+      decades it has quietly trained entire generations to accept that most of
+      what we hear can be discarded without consequence. CD-quality audio
+      moves at about 1,411 kilobits per second; the standard 128 kbps mp3
+      reduces that to roughly one tenth the size (“30 years of .mp3”). That
+      reduction was enough to make online music exchange practical in the late
+      1990s, and the culture that formed around it was immense. It birthed
+      (per se) AAC, which is the standard audio format for nearly every video
+      format, static or streamed. If I were to list all the different ways mp3
+      is used today, I’d run out of disk space.</p>
+      <p class="text-paragraph">But how can data just be discarded without consequence? In the first
+      section of this paper, I aim to describe the mp3 format by explaining
+      the psychology that it employs. If you make it past the explanation, the
+      subsequent <a href="#encode-a-file">demonstration</a> section is an
+      interactive exhibition of three critical steps in the encoding process,
+      where you can upload an uncompressed (.wav) audio file and see what the
+      mp3 algorithm is doing to compress your audio data.</p>
+      <p class="text-paragraph">In the latter sections (order TBD), I’ll also include a brief history
+      of audio recording technologies and the practice of <em>audio
+      coding</em>, including the innovations behind <em>perceptual audio
+      coding</em>. Finally, I’ll expand the scope of the paper to more
       philosophical horizons, contemplating the <em>current</em> ideologies
       surrounding lossy audio compression, as well as the speculative future
       of coding paradigms (i.e. touching on AI-assisted compression).</p>
+      <p class="text-paragraph">My thesis (TBD) is something along the lines of: “the MP3 format is a
+      prime example of capitalism at its most <em>fearsome</em>. We contrast
+      progress for the sake of <em>science</em> with progress for the sake of
+      <em>money</em>.</p>
       <p class="text-paragraph">If you’re curious, here’s <a target="_blank" href="https://github.com/randomLevelup/mp3paper">the code</a>.</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Part One
       </div>
-      <h2 id="a-brief-history" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">A Brief History</h2>
-      <p class="text-paragraph">As we know, sound waves propagate through air and interfere
-      additively, such that every excitation of air from any source, no matter
-      its strength, contributes to a single perceived stream of sound which
-      is, “in short, a tumbled entanglement of the most different kinds of
-      motion, complicated beyond conception [1, p. 26].”</p>
-      <p class="text-paragraph">To be discussed:</p>
-      <ul class="bullet-list mt-4 mb-10 max-w-4xl">
-      <li>Helmholtz’ <em>Sensations of Tone</em></li>
-      <li>Bell’s phonograph</li>
-      <li>Edison’s phonograph</li>
-      <li>The industrial revolution</li>
-      <li>Emergence of perceptual analysis and coding techniques</li>
-      </ul>
+      <h2 id="whered-my-data-go" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Where’d My Data Go?</h2>
+      <p class="text-paragraph">To understand the mp3 format, there are two concepts that you’ll need
+      to grasp first. They are, in order, <em>lossy compression</em> and
+      <em>psychoacoustic masking</em>. The idea behind <em>lossy
+      compression</em> is that, through some encoding process, the number of
+      bits (ones and zeroes) needed to store a file can be <em>reduced</em>,
+      such that the decoded data is not an exact recover of the original data,
+      but is close enough that the human ear cannot tell the difference.</p>
+      <p class="text-paragraph">The second crucial concept, <em>psychoacoustic masking</em>, is a bit
+      more esoteric. After all, it has ‘psych’ in its name. In short,
+      psychoacoustic masking is a phenomenon wherein “louder sounds hide,
+      i.e., ‘mask’, softer sounds in their spectral or temporal vicinity”
+      (Sterne). That is to say, masking causes us to lose track of the fainter
+      sounds when a loud sound is introduced. Certain signals are better
+      maskers than others—white noise, for instance is an excellent masker.
+      Part of the mp3 algorithm involves ‘replacing’ weaker signals with noise
+      (random aperiodic signals). Interestingly, psychoacoustic masking is a
+      primarily <em>neurological</em> phenomenon, meaning that when perceptual
+      audio coding works properly, the algorithm is effectively tricking your
+      brain into ‘hearing’ more sounds than are actually present.</p>
+      <p class="text-paragraph">Now that you’re acquainted with the basic ideas of perceptual audio
+      coding, I’ll outline the actual steps that the mp3 encoder carries out.
+      They are as follows:</p>
+      <ol type="1" class="list-decimal pl-6 text-[#2c2e33] space-y-2 mt-4 mb-10 max-w-4xl">
+      <li>Split the input signal into evenly-spaced <em>frequency
+      bands</em>.</li>
+      <li>Analyze those bands to find which frequencies can be <em>masked</em>
+      at different points in time.</li>
+      <li>Allocate an appropriate amount of <em>bits</em> to each band,
+      depending on their <em>masking ratio</em>. This is called
+      <em>quantization</em>.</li>
+      <li>Write all of the quantized bands <em>individually</em> to the output
+      file.</li>
+      </ol>
+      <p class="text-paragraph">As you might have noticed, the resulting <code>.mp3</code> file does
+      <em>not</em> store a single stream of audio data. Rather, it stores a
+      bunch of <em>streams</em> (39 to be exact) of data, where each stream
+      represents a frequency band with masking and quantization applied. The
+      frequencies are only ever recombined to a single stream when the file is
+      opened and played.</p>
+      <p class="text-paragraph">Now let’s see it in action:</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
       Part Two
       </div>
-      <h2 id="demonstration" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Demonstration</h2>
-      <p class="text-paragraph">Helmholtz was correct in declaring the mechanisms of wave composition
-      <em>complicated</em>, though via the progression of his own work, and
-      the nearly two centuries of science that succeeded it, the qualifier
-      ‘beyond conception’ is proven hyperbole. In this section, I hope to
-      distill some of the wisdom attained in those years into an interactive
-      demo of the mp3 algorithm, blown up step-by-step with helpful
-      visualizations. The goal is to show the nature of the data that’s being
-      discarded, and of the data that’s being kept around.</p>
+      <h2 id="encode-a-file" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Encode A File</h2>
+      <p class="text-paragraph">In this section, I hope to supplement my explanation with an
+      interactive demo of the mp3 algorithm, blown up step-by-step with
+      helpful visualizations. The visualizations are three spectrograms (that
+      is, time on the x-axis and frequency on the y-axis), generated from the
+      actual data that exists in the computer’s memory at three critical
+      points in the encoding process. First, you’ll need to upload an
+      uncompressed audio file (in <code>.wav</code> format). Alternatively,
+      the provided mp3 file is a 5-second clip of a simple tone.</p>
 
       <div class="card">
         <p class="eyebrow">Step One</p>
-        <h2 class="card-heading">Upload File</h2>
+        <h2 id="upload-file" class="card-heading">Upload File</h2>
         <div class="card-paragraph">
           <p><button id="btn-upload" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Upload WAV</button><br />
           <button id="btn-example" class="px-5 py-2.5 mr-3 mb-3 bg-primary/10 text-primary font-semibold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors">Use Example File</button><br />
@@ -118,12 +165,14 @@
         </div>
       </div>
 
-      <p class="text-paragraph">Now you may adjust the bit-rate. Its like a quality slider. Choose
-      your bit rate now!</p>
+      <p class="text-paragraph">Now you may adjust the bit-rate. This number determines the
+      <em>compression ratio</em> of the encode. Smaller values mean more data
+      will be discarded. Basically, it’s like a quality slider. Choose your
+      bit rate and click encode!</p>
 
       <div class="card">
         <p class="eyebrow">Step Two</p>
-        <h2 class="card-heading">Adjust Bit Rate</h2>
+        <h2 id="adjust-bit-rate" class="card-heading">Adjust Bit Rate</h2>
         <div class="card-paragraph">
           <p><div class="mt-6 mb-1"><input type="range" id="bitrate" class="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" min="8" max="320" value="128" step="8"></div><br />
           <p id="bitrate-display" class="text-base text-primary/70 mt-1 mb-8 pl-1 font-medium">128 kbps</p></p>
@@ -133,12 +182,14 @@
       </div>
 
       <div class="card">
-        <p class="eyebrow">Algorithm: Polyphase Filtering</p>
+        <p class="eyebrow">Algorithm - Step One - Polyphase Filtering</p>
         <div class="card-paragraph">
-          <p>We run the data through a custom filterbank to divide the audio
-          signal into 32 equal-width frequency subbands. For the visualization, We
-          show the subband split visually, alongside other stats from this step in
-          the encoding process.</p>
+          <p>The first step is to divide audio signal into 32 equal-width
+          frequency bands. To do this, we use a mathematical object called a <a target="_blank" href="https://en.wikipedia.org/wiki/Filter_bank">filterbank</a>. For the
+          visualization, We show the subband split visually, so you can see which
+          bands appear to have more energy, upon initial analysis. In this step,
+          the <em>timestep size</em> of the signal (effectively the resolution) is
+          adjusted based on the bitrate, to a noticeable extent.</p>
           <div class="mt-6">
 
           </div>
@@ -148,22 +199,29 @@
       </div>
 
       <div class="card">
-        <p class="eyebrow">Algorithm: Psychoacoustics Modeling</p>
+        <p class="eyebrow">Algorithm - Step Two - Psychoacoustic Masking</p>
         <div class="card-paragraph">
-          <p><em>Masking</em> is a primarily neurological phenomenon wherein
-          “louder sounds hide, i.e., ‘mask’, softer sounds in their spectral or
-          temporal vicinity” [2]. That is to say, masking causes us to lose track
-          of the fainter sounds when a loud sound is introduced. Certain signals
-          are better maskers than others (white noise, for instance). This part of
-          the mp3 algorithm involves ‘replacing’ weaker signals with noise (random
-          aperiodic signals). This effect is essential for perceptual coding
-          algorithms to work properly.</p>
-          <p>Psychoacoustics has examined the concept of auditory masking and its
-          effect on compression. The human ear has ‘critical subbands’ where
-          masking occurs more conspicuously. This visualization will show some of
-          that subband analysis in a digestible way. In this step, each
-          visualization should be quite unique to the audio file that we’re
-          encoding.</p>
+          <p>As we know, masking causes us to lose track of the fainter sounds
+          when a loud sound is introduced. Therefore, we can calculate optimal
+          <em>masking ratios</em> for each frequency band over the course of the
+          audio time.</p>
+          <p>This graph shows, for each moment in the file and each critical band,
+          how much the encoder believes that band can be masked. Frequencies
+          shaded teal are those the model considers more thoroughly maskable,
+          meaning the encoder can be more aggressive there without expecting you
+          to notice; bands shaded orange are less safely masked, which means they
+          are more exposed, more perceptually important, and therefore more
+          ‘expensive’ to compress.</p>
+          <p>The large gray region in the upper frequencies appears because the
+          encoder uses a slightly modified band layout for this step. In ordinary,
+          more stable passages it uses <em>long blocks</em>, which are ascribed a
+          <em>constant</em> masking ratio and therefore have no values to display
+          and are painted gray. The taller bars that occasionally rise through the
+          gray appear when the encoder switches to <em>short blocks</em> or
+          <em>mixed blocks</em>, usually because it has detected a moment that
+          needs finer time resolution in order to avoid distortion. In those
+          moments, fine psychoacoustic masking is applied to the upper frequencies
+          as well, so the graph briefly fills in all the way upward.</p>
           <div class="mt-6">
 
           </div>
@@ -173,14 +231,23 @@
       </div>
 
       <div class="card">
-        <p class="eyebrow">Algorithm: Bit Allocation</p>
+        <p class="eyebrow">Algorithm - Step Three - Bit Allocation</p>
         <div class="card-paragraph">
-          <p>The bit allocation uses information from the psychoacoustic model to
-          determine the number of code bits to be allocated to each subband. This
-          process can be described using the following formula:
-          <code>MNRdB = SNRdB - SMRdB</code>. For this visualization, we want to
-          build off the psychoacoustics results and show which bands are getting
-          more bits.</p>
+          <p>The final critical step, <em>bit allocation</em>, is where the
+          encoder turns those psychoacoustic analysis results into actual
+          compression decisions. In this graph, each square marks a frequency band
+          at a particular moment in time. Larger squares indicate bands to which
+          the encoder is devoting more <em>precision</em>, while smaller squares
+          indicate bands it can afford to describe more crudely. In this graph,
+          the color of the square reflects the raw energy of the band, so
+          brighter, warmer squares tend to be bands where more acoustic activity
+          is present.</p>
+          <p>The basic principle is this: The encoder has a limited budget of bits
+          (determined by the <a href="#adjust-bit-rate">bitrate</a>) for each
+          moment of audio, and it cannot spend them equally everywhere. Bands that
+          are loud, exposed, or difficult to hide generally receive more
+          attention, because errors there are easier to hear. Bands that are quiet
+          or strongly masked can be represented more cheaply.</p>
           <div class="mt-6">
 
           </div>
@@ -190,9 +257,10 @@
       </div>
 
       <div class="card">
-        <p class="eyebrow">Algorithm: Result</p>
+        <p class="eyebrow">Algorithm - Result</p>
         <div class="card-paragraph">
-          <p>Listen to the resulting mp3 file:</p>
+          <p>Now you can listen to the resulting mp3 file. Try to see if you can
+          hear any distortion or compression artifacts!</p>
           <div class="mt-6">
 
           </div>
@@ -201,10 +269,38 @@
         </div>
       </div>
 
-      <p class="text-paragraph">Now try again with a different bitrate…</p>
+      <p class="text-paragraph">Wonderful. Now <a href="#adjust-bit-rate">try again</a> with a
+      different bitrate.</p>
       <hr class="my-20 border-primary-dark/30 max-w-4xl">
       <div class="eyebrow mb-3">
-      Parts Three, Four etc.
+      Part Three
+      </div>
+      <h2 id="a-brief-history" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">A Brief History</h2>
+      <p class="text-paragraph">As we know, sound waves propagate through air and interfere
+      additively, such that every excitation of air from any source, no matter
+      its strength, contributes to a single perceived stream of sound which
+      is, “in short, a tumbled entanglement of the most different kinds of
+      motion, complicated beyond conception” (Helmholtz 26). Helmholtz was
+      correct in declaring the mechanisms of wave composition
+      <em>complicated</em>, though via the progression of his own work, and
+      the nearly two centuries of science that succeeded it, the qualifier
+      ‘beyond conception’ is proven hyperbole. You, dear reader, should know
+      this, as you’ve already become an expert in psychoacoustic masking after
+      reading the first couple sections of this paper. Now, we’ll travel back
+      to a time before computers, cassettes and vinyl; before even the
+      gramophone was invented, and we’ll trace the origins of our beloved mp3
+      format all the way up to the present day.</p>
+      <p class="text-paragraph">Proposed subjects in this section:</p>
+      <ul class="bullet-list mt-4 mb-10 max-w-4xl">
+      <li>Helmholtz’ <em>Sensations of Tone</em></li>
+      <li>Bell’s phonograph</li>
+      <li>Edison’s phonograph</li>
+      <li>The industrial revolution</li>
+      <li>Emergence of perceptual analysis and coding techniques</li>
+      </ul>
+      <hr class="my-20 border-primary-dark/30 max-w-4xl">
+      <div class="eyebrow mb-3">
+      Parts Four, Five etc.
       </div>
       <h2 id="rest-of-the-paper" class="text-3xl font-bold mb-8 text-primary scroll-mt-8">Rest of the Paper</h2>
       <p class="text-paragraph"><em>paper pending…</em></p>
@@ -213,23 +309,26 @@
       <li>Present condition of lossy audio compression</li>
       <li>Economy of bitrate: bandwidth limitations in some regions,
       popularity of streaming</li>
-      <li>Future speculation for mp3 (i.e. AI-assisted compression)</li>
+      <li>Future speculation for encoding (i.e. AI-assisted compression)</li>
       </ul>
 
       <footer class="page-footer">
         <p class="text-xl font-semibold mb-6 text-primary">References:</p>
         <div class="references-list">
-        <div class="reference-item"><span class="reference-number">[1]</span><span class="reference-text">H. von Helmholtz, <em>On the sensations of tone as a
+        <div class="reference-item"><span class="reference-number">[1]</span><span class="reference-text">T. Brock, “Articles of Incorporation,” <em>Silicon Valley</em>,
+        Apr. 20, 2014.</span></div>
+        <div class="reference-item"><span class="reference-number">[2]</span><span class="reference-text">H. von Helmholtz, <em>On the sensations of tone as a
         physiological basis for the theory of music</em>, Second English
         edition. New York: Dover Publications, 1954.</span></div>
-        <div class="reference-item"><span class="reference-number">[2]</span><span class="reference-text">J. Herre, S. Quackenbush, M. Kim, and J. Skoglund, “Perceptual
-        Audio Coding: A 40-Year Historical Perspective,” in <em>ICASSP 2025 -
-        2025 IEEE International Conference on Acoustics, Speech and Signal
-        Processing (ICASSP)</em>, Apr. 2025, pp. 1–5. doi: <a target="_blank" href="https://doi.org/10.1109/ICASSP49660.2025.10887760">10.1109/ICASSP49660.2025.10887760</a>.</span></div>
-        <div class="reference-item"><span class="reference-number">[3]</span><span class="reference-text">J. Sterne, <em>The audible past: cultural origins of sound
+        <div class="reference-item"><span class="reference-number">[3]</span><span class="reference-text">V. Lombardi, “Masking and Perceptual Coding,” Audio on The
+        Internet. Accessed: Apr. 16, 2026. [Online]. Available: <a target="_blank" href="https://www.noisebetweenstations.com/personal/essays/audio_on_the_internet/MaskingPaper.html">https://www.noisebetweenstations.com/personal/essays/audio_on_the_internet/MaskingPaper.html</a></span></div>
+        <div class="reference-item"><span class="reference-number">[4]</span><span class="reference-text">J. Sterne, <em>The audible past: cultural origins of sound
         reproduction</em>. Durham: Duke University Press, 2003.</span></div>
-        <div class="reference-item"><span class="reference-number">[4]</span><span class="reference-text">J. Sterne, <em>MP3</em>. in The Meaning of a Format. Duke
+        <div class="reference-item"><span class="reference-number">[5]</span><span class="reference-text">J. Sterne, <em>MP3</em>. in The Meaning of a Format. Duke
         University Press, 2012. doi: <a target="_blank" href="https://doi.org/10.1515/9780822395522">10.1515/9780822395522</a>.</span></div>
+        <div class="reference-item"><span class="reference-number">[6]</span><span class="reference-text">“30 Years of .mp3: Three Letters That Changed the World,”
+        Fraunhofer Institute for Integrated Circuits IIS. Accessed: Apr. 16,
+        2026. [Online]. Available: <a target="_blank" href="https://www.iis.fraunhofer.de/en/magazin/panorama/2025/30-years-of-mp3.html">https://www.iis.fraunhofer.de/en/magazin/panorama/2025/30-years-of-mp3.html</a></span></div>
         </div>
       </footer>
     </main>
