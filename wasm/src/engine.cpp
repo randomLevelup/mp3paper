@@ -65,6 +65,13 @@ void Mp3StateEngine::set_bitrate(int bitrate) {
     std::cout << "[WASM] Bitrate set to: " << bitrate << " kbps." << std::endl;
 }
 
+bool Mp3StateEngine::is_analysis_ready_state() const {
+    return current_state_ == Mp3State::ENCODING_COMPLETE ||
+           current_state_ == Mp3State::POLYPHASE_COMPLETE ||
+           current_state_ == Mp3State::PSYCHO_COMPLETE ||
+           current_state_ == Mp3State::BITALLOC_COMPLETE;
+}
+
 AnalysisFrameHeader Mp3StateEngine::convert_header(const mp3paper_analysis_frame_header_t& header) {
     AnalysisFrameHeader out{};
     out.frame_index = header.frame_index;
@@ -246,7 +253,7 @@ static std::string serialize_header(const AnalysisFrameHeader& h) {
 }
 
 void Mp3StateEngine::step_polyphase(StepCallback cb) {
-    if (current_state_ != Mp3State::ENCODING_COMPLETE) {
+    if (!is_analysis_ready_state()) {
         if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Encode not complete.");
         return;
     }
@@ -269,8 +276,8 @@ void Mp3StateEngine::step_polyphase(StepCallback cb) {
 }
 
 void Mp3StateEngine::step_psycho(StepCallback cb) {
-    if (current_state_ != Mp3State::POLYPHASE_COMPLETE) {
-        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Polyphase step not ready.");
+    if (!is_analysis_ready_state()) {
+        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Encode not complete.");
         return;
     }
     current_state_ = Mp3State::PSYCHO_COMPLETE;
@@ -298,8 +305,8 @@ void Mp3StateEngine::step_psycho(StepCallback cb) {
 }
 
 void Mp3StateEngine::step_bitalloc(StepCallback cb) {
-    if (current_state_ != Mp3State::PSYCHO_COMPLETE) {
-        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Psycho step not ready.");
+    if (!is_analysis_ready_state()) {
+        if (cb) cb(static_cast<int>(Mp3State::ERROR_STATE), "Error: Encode not complete.");
         return;
     }
     current_state_ = Mp3State::BITALLOC_COMPLETE;

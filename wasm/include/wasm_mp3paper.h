@@ -109,6 +109,7 @@ public:
     Mp3State get_current_state() const { return current_state_; }
 
 private:
+    bool is_analysis_ready_state() const;
     static AnalysisFrameHeader convert_header(const mp3paper_analysis_frame_header_t& header);
     static void on_polyphase_record(void* user_data, const mp3paper_polyphase_record_t* record);
     static void on_psycho_record(void* user_data, const mp3paper_psycho_record_t* record);

@@ -167,17 +167,17 @@ async function loadMp3PaperWasm() {
         }
 
         if (stepKey === 'psycho') {
-          if (normalized.includes('polyphase step not ready')) {
-            return 'Run Polyphase first, then run Psychoacoustics.';
+          if (normalized.includes('encode not complete')) {
+            return 'Run Encode first, then run Psychoacoustics.';
           }
-          return cleaned || 'Psychoacoustics is not ready yet. Complete Polyphase first.';
+          return cleaned || 'Psychoacoustics is not ready yet. Run Encode first.';
         }
 
         if (stepKey === 'bitalloc') {
-          if (normalized.includes('psycho step not ready')) {
-            return 'Run Psychoacoustics first, then run Bit Allocation.';
+          if (normalized.includes('encode not complete')) {
+            return 'Run Encode first, then run Bit Allocation.';
           }
-          return cleaned || 'Bit Allocation is not ready yet. Complete Psychoacoustics first.';
+          return cleaned || 'Bit Allocation is not ready yet. Run Encode first.';
         }
 
         return cleaned || 'Operation failed. Please try again.';
@@ -198,7 +198,7 @@ async function loadMp3PaperWasm() {
       function runWasmStep({ stepKey, expectedState, invoke, onSuccess, onError }) {
         const cbPtr = module.addFunction((stateCode, dataPtr) => {
           const payload = dataPtr ? module.UTF8ToString(dataPtr) : '';
-          console.log(`[mp3paper] ${stepKey} callback state=${stateCode}`, payload);
+          console.log(`[mp3paper] ${stepKey} callback state=${stateCode} payloadBytes=${payload.length}`);
 
           if (stateCode === expectedState) {
             onSuccess(payload, stateCode);
@@ -379,15 +379,13 @@ async function loadMp3PaperWasm() {
                 infoEncode.textContent = 'Encoding ready. Scroll down to run the next steps.';
               }
 
-              if (btnPolyphase) {
-                if (!btnPolyphase.classList.contains('hidden')) {
-                  btnPolyphase.textContent = 'Update';
-                } else {
-                  btnPolyphase.classList.remove('hidden');
+              [btnPolyphase, btnPsycho, btnBitalloc].forEach((btn) => {
+                if (!btn) {
+                  return;
                 }
-              }
-              if (btnPsycho && !btnPsycho.classList.contains('hidden')) btnPsycho.textContent = 'Update';
-              if (btnBitalloc && !btnBitalloc.classList.contains('hidden')) btnBitalloc.textContent = 'Update';
+                btn.classList.remove('hidden');
+                btn.textContent = 'Update';
+              });
 
               if (audioResult && !audioResult.classList.contains('hidden')) {
                 renderEncodedAudio();
@@ -415,7 +413,7 @@ async function loadMp3PaperWasm() {
               }
               renderPolyphasePlot(data);
               if (btnPsycho) btnPsycho.classList.remove('hidden');
-              console.log('[mp3paper] polyphase:', data);
+              console.log(`[mp3paper] polyphase records=${data.length}`);
             },
             onError: (message) => {
               setButtonLoading(btnPolyphase, false, 'Update');
@@ -440,7 +438,7 @@ async function loadMp3PaperWasm() {
               psychoDataCache = data;
               renderPsychoPlot(data);
               if (btnBitalloc) btnBitalloc.classList.remove('hidden');
-              console.log('[mp3paper] psycho:', data);
+              console.log(`[mp3paper] psycho records=${data.length}`);
             },
             onError: (message) => {
               setButtonLoading(btnPsycho, false, 'Update');
@@ -462,9 +460,38 @@ async function loadMp3PaperWasm() {
               if (!Array.isArray(data)) {
                 return;
               }
-              renderBitallocPlot(data, psychoDataCache);
-              renderEncodedAudio();
-              console.log('[mp3paper] bitalloc:', data);
+
+              const renderBitalloc = () => {
+                renderBitallocPlot(data, psychoDataCache);
+                renderEncodedAudio();
+                console.log(`[mp3paper] bitalloc records=${data.length}`);
+              };
+
+              if (Array.isArray(psychoDataCache)) {
+                renderBitalloc();
+                return;
+              }
+
+              runWasmStep({
+                stepKey: 'psycho',
+                expectedState: MP3_STATE.PSYCHO_COMPLETE,
+                invoke: (cbPtr) => module._mp3_step_psycho(cbPtr),
+                onSuccess: (psychoPayload) => {
+                  const psychoData = parseJsonPayload(psychoPayload);
+                  if (Array.isArray(psychoData)) {
+                    psychoDataCache = psychoData;
+                    renderPsychoPlot(psychoData);
+                    if (btnPsycho) {
+                      btnPsycho.classList.remove('hidden');
+                      btnPsycho.textContent = 'Update';
+                    }
+                  }
+                  renderBitalloc();
+                },
+                onError: () => {
+                  renderBitalloc();
+                },
+              });
             },
             onError: (message) => {
               setButtonLoading(btnBitalloc, false, 'Update');
