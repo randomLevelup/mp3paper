@@ -383,8 +383,9 @@ async function loadMp3PaperWasm() {
                 if (!btn) {
                   return;
                 }
+                const wasHidden = btn.classList.contains('hidden');
                 btn.classList.remove('hidden');
-                btn.textContent = 'Update';
+                btn.textContent = wasHidden ? 'Run' : 'Update';
               });
 
               if (audioResult && !audioResult.classList.contains('hidden')) {
